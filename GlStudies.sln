@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TemplateWinApi", "TemplateW
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TemplateGl", "TemplateGl\TemplateGl.vcxproj", "{CF224707-1734-47BC-BA67-AAEA265D7CC3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TemplateGlExt", "TemplateGlExt\TemplateGlExt.vcxproj", "{918C9911-B0BB-49B3-B03D-EFB6B484921B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -27,6 +29,10 @@ Global
 		{CF224707-1734-47BC-BA67-AAEA265D7CC3}.Debug|Win32.Build.0 = Debug|Win32
 		{CF224707-1734-47BC-BA67-AAEA265D7CC3}.Release|Win32.ActiveCfg = Release|Win32
 		{CF224707-1734-47BC-BA67-AAEA265D7CC3}.Release|Win32.Build.0 = Release|Win32
+		{918C9911-B0BB-49B3-B03D-EFB6B484921B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{918C9911-B0BB-49B3-B03D-EFB6B484921B}.Debug|Win32.Build.0 = Debug|Win32
+		{918C9911-B0BB-49B3-B03D-EFB6B484921B}.Release|Win32.ActiveCfg = Release|Win32
+		{918C9911-B0BB-49B3-B03D-EFB6B484921B}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
