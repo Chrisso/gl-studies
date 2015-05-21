@@ -10,6 +10,7 @@
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 // Windows Header Files:
 #include <windows.h>
+#include <shellapi.h>
 #include <GL/glew.h>
 #include <GL/wglew.h>
 
@@ -35,6 +36,7 @@ extern CAppModule _Module;	// WTL version of CComModule
 #include <atlcrack.h>		// WTL enhanced msg map macros
 #include <atlctrls.h>		// WTL windows controls
 #include <atlctrlw.h>
+#include <atlctrlx.h>
 
 #include "../Common/Logging.h"             // custom logging
 #include "../Common/HighResolutionTimer.h" // custom benchmarking

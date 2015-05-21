@@ -9,8 +9,9 @@ private:
 	HDC   m_hDC;
 	HGLRC m_hRC;
 
-	CScene          *m_pScene;
-	CCommandBarCtrl  m_CmdBar;
+	CScene                    *m_pScene;
+	CCommandBarCtrl            m_CmdBar;
+	CMultiPaneStatusBarCtrl    m_StatusBar;
 	Util::CHighResolutionTimer m_Timer;
 
 public:

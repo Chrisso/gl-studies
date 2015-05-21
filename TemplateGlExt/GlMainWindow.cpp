@@ -28,7 +28,11 @@ LRESULT CGlMainWindow::OnCreate(CREATESTRUCT *lpcs)
 
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
 	AddSimpleReBarBand(hWndCmdBar);
-	CreateSimpleStatusBar();
+	
+	int nPanes[] = { ID_DEFAULT_PANE, IDS_FPS_PANE };
+	m_hWndStatusBar = m_StatusBar.Create(m_hWnd);
+	m_StatusBar.SetPanes(nPanes, 2, false);
+	m_StatusBar.SetPaneText(ID_DEFAULT_PANE, CString((LPCTSTR)IDS_READY));
 
 	if (!InitGlew())
 	{
@@ -118,7 +122,6 @@ LRESULT CGlMainWindow::OnCreate(CREATESTRUCT *lpcs)
 	LOGMSG_DEBUG(Logging::CLogMessage(_T("%s\n"), CA2CT(reinterpret_cast<const char*>(glGetString(GL_VERSION)))));
 #endif
 
-	::SendMessage(m_hWndStatusBar, WM_SETTEXT, 0, (LPARAM)(LPCTSTR)CString((LPCTSTR)IDS_READY));
 	UpdateLayout();
 	SetMsgHandled(FALSE);
 
@@ -168,7 +171,7 @@ LRESULT CGlMainWindow::OnBenchmark(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			CString formatter;
 			formatter.Format(_T("%d FPS"), lParam);
-			::SendMessage(m_hWndStatusBar, WM_SETTEXT, 0, (LPARAM)(LPCTSTR)formatter);
+			m_StatusBar.SetPaneText(IDS_FPS_PANE, formatter);
 		} break;
 	}
 
