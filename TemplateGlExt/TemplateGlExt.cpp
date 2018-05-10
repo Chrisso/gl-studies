@@ -7,26 +7,23 @@
 
 CAppModule _Module;
 
-int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
-	_In_ LPTSTR    lpCmdLine,
+	_In_ LPWSTR    lpCmdLine,
 	_In_ int       nCmdShow)
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-	CoInitialize(NULL);
-	AtlInitCommonControls(ICC_COOL_CLASSES | ICC_BAR_CLASSES | ICC_USEREX_CLASSES);
+	ATLTRACE(_T("Initializing application...\n"));
+	::CoInitialize(NULL);
+	::AtlInitCommonControls(ICC_COOL_CLASSES | ICC_BAR_CLASSES | ICC_USEREX_CLASSES);
 	_Module.Init(NULL, hInstance);
 
-	Logging::CLoggerFactory::getDefaultInstance()->AddTarget(new Logging::CLogTargetDebugger(Logging::LOG_LEVEL_DEBUG));
-	Logging::CLoggerFactory::getDefaultInstance()->AddTarget(new Logging::CLogTargetMessageBox(Logging::LOG_LEVEL_ERROR));
-	LOGMSG_INFO(_T("Starting application and initializing diagnostics...\n"));
-
 	CGlMainWindow win;
-	if (!win.CreateEx(NULL, CRect(100, 100, 800, 600)))
+	if (!win.CreateEx(NULL, NULL))
 	{
-		LOGMSG_ERROR(_T("Failed to create main window! Application will exit now.\n"));
+		::AtlMessageBox(NULL, _T("Failed to create main window! Application will exit now."));
 		return 1; // Window creation failed
 	}
 
@@ -52,8 +49,8 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	}
 
 	_Module.Term();
-	CoUninitialize();
+	::CoUninitialize();
 
-	LOGMSG_DEBUG(_T("Exiting application.\n"));
+	ATLTRACE(_T("Exiting application.\n"));
 	return (int)msg.wParam;
 }

@@ -3,9 +3,9 @@
 
 /////////////////////////////////////////////////////////////////
 // Construction/ Destruction
-////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
 
-CGlMainWindow::CGlMainWindow() : m_pScene(NULL), m_hDC(NULL), m_hRC(NULL)
+CGlMainWindow::CGlMainWindow()
 {
 }
 
@@ -14,113 +14,87 @@ CGlMainWindow::~CGlMainWindow()
 }
 
 /////////////////////////////////////////////////////////////////
-// Method Implemenatation/ Windows Messge Handling
+// Method Implementation/ Windows Message Handling
 /////////////////////////////////////////////////////////////////
 
-LRESULT CGlMainWindow::OnCreate(CREATESTRUCT *lpcs)
+int CGlMainWindow::OnCreate(CREATESTRUCT *lpcs)
 {
-	LOGMSG_DEBUG(_T("OnCreate\n"));
+	ATLTRACE(_T("OnCreate\n"));
 
-	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE);// create command bar window
-	m_CmdBar.AttachMenu(GetMenu());			// attach menu
-	m_CmdBar.LoadImages(IDR_MAINFRAME);		// load command bar images
-	SetMenu(NULL);							// remove old menu
+	// create command bar menu
+	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE);
+	m_CmdBar.AttachMenu(GetMenu()); // attach menu
+	SetMenu(NULL);					// remove old menu
 
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
 	AddSimpleReBarBand(hWndCmdBar);
-	
-	int nPanes[] = { ID_DEFAULT_PANE, IDS_FPS_PANE };
-	m_hWndStatusBar = m_StatusBar.Create(m_hWnd);
-	m_StatusBar.SetPanes(nPanes, 2, false);
-	m_StatusBar.SetPaneText(ID_DEFAULT_PANE, CString((LPCTSTR)IDS_READY));
 
-	if (!InitGlew())
-	{
-		LOGMSG_ERROR(_T("Could initialize graphics extensions!\n"));
-		return -1;
-	}
+	// create status bar
+	CreateSimpleStatusBar();
+	int nPanes[] = { ID_DEFAULT_PANE, ID_INFO_PANE };
+	m_StatusBar.SubclassWindow(m_hWndStatusBar);
+	m_StatusBar.SetPanes(nPanes, sizeof(nPanes) / sizeof(int), false);
+	m_StatusBar.SetPaneText(ID_DEFAULT_PANE, _T("Ready"));
 
 	m_hDC = GetDC();
 	if (!m_hDC)
 	{
-		LOGMSG_ERROR(_T("Could not get device context!\n"));
+		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
 		return -1;
 	}
 
-	int PixelFormat = 0;
+	if (!InitGlew())
+	{
+		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
+		return -1;
+	}
+
+	UINT nFormats = 0;
+	int nPixelFormat = 0;
+	int nAttributes[] = {
+		WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+		WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
+		WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
+		WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
+		WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
+		WGL_COLOR_BITS_ARB, ::GetDeviceCaps(m_hDC, BITSPIXEL),
+		WGL_DEPTH_BITS_ARB, 16,
+		WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
+		WGL_SAMPLES_ARB, 8,
+		0
+	};
+
+	if (!wglChoosePixelFormatARB(m_hDC, nAttributes, NULL, 1, &nPixelFormat, &nFormats) || !nFormats)
+	{
+		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
+		return -1;
+	}
+
 	PIXELFORMATDESCRIPTOR pfd;
 
-	if (WGLEW_ARB_pixel_format && WGLEW_ARB_multisample)
+	if (!nPixelFormat ||
+		!::DescribePixelFormat(m_hDC, nPixelFormat, sizeof(PIXELFORMATDESCRIPTOR), &pfd) ||
+		!::SetPixelFormat(m_hDC, nPixelFormat, &pfd))
 	{
-		UINT  nFormats = 0;
-		int   nPixelFormat  = 0;
-		float fAttributes[] = { 0.0f, 0.0f };
-		int   nAttributes[] = {
-			WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
-			WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
-			WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
-			WGL_COLOR_BITS_ARB, 32,
-			WGL_ALPHA_BITS_ARB, 8,
-			WGL_DEPTH_BITS_ARB, 16,
-			WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
-			WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
-			WGL_SAMPLES_ARB, 8,
-			0, 0 };
-
-		wglChoosePixelFormatARB(m_hDC, nAttributes, fAttributes, 1, &nPixelFormat, &nFormats);
-		if (nFormats)
-		{
-			LOGMSG_DEBUG(_T("Multisampling is available!\n"));
-			PixelFormat = nPixelFormat;
-		}
-	}
-	
-	if (!PixelFormat)
-	{
-		LOGMSG_DEBUG(_T("Proceeding without multisampling.\n"));
-		ZeroMemory(&pfd, sizeof(PIXELFORMATDESCRIPTOR));
-		pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-		pfd.nVersion = 1;
-		pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-		pfd.iPixelType = PFD_TYPE_RGBA;
-		pfd.cColorBits = GetDeviceCaps(m_hDC, BITSPIXEL);
-		pfd.cDepthBits = 16;
-		PixelFormat = ChoosePixelFormat(m_hDC, &pfd);
-	}
-
-	if (!PixelFormat)
-	{
-		LOGMSG_ERROR(_T("Could not choose pixelformat!\n"));
-		return -1;
-	}
-	if (!SetPixelFormat(m_hDC, PixelFormat, &pfd))
-	{
-		LOGMSG_ERROR(_T("Could not set pixelformat!\n"));
+		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
 		return -1;
 	}
 
 	m_hRC = wglCreateContext(m_hDC);
-	if (!m_hRC)
+	if (!m_hRC || !wglMakeCurrent(m_hDC, m_hRC))
 	{
-		LOGMSG_ERROR(_T("Could not create OpenGL context!\n"));
-		return -1;
-	}
-
-	if (!wglMakeCurrent(m_hDC, m_hRC))
-	{
-		LOGMSG_ERROR(_T("Could not set OpenGL context!\n"));
+		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
 		return -1;
 	}
 
 	m_pScene = new CScene();
-	m_Timer.SetBenchmarkTarget(m_hWnd);
+	m_FrameCounter.SetTargetWindow(m_hWnd);
 
-#ifdef _DEBUG
 	USES_CONVERSION;
-	LOGMSG_DEBUG(Logging::CLogMessage(_T("%s\n"), CA2CT(reinterpret_cast<const char*>(glGetString(GL_VENDOR)))));
-	LOGMSG_DEBUG(Logging::CLogMessage(_T("%s\n"), CA2CT(reinterpret_cast<const char*>(glGetString(GL_RENDERER)))));
-	LOGMSG_DEBUG(Logging::CLogMessage(_T("%s\n"), CA2CT(reinterpret_cast<const char*>(glGetString(GL_VERSION)))));
-#endif
+	ATLTRACE(_T("GL_VENDOR:   %s\n"), (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_VENDOR))));
+	ATLTRACE(_T("GL_RENDERER: %s\n"), (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_RENDERER))));
+	ATLTRACE(_T("GL_VERSION:  %s\n"), (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_VERSION))));
+	ATLTRACE(_T("GL_SLVSN:    %s\n"), (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION))));
 
 	UpdateLayout();
 	SetMsgHandled(FALSE);
@@ -128,36 +102,46 @@ LRESULT CGlMainWindow::OnCreate(CREATESTRUCT *lpcs)
 	return 0;
 }
 
-LRESULT CGlMainWindow::OnClose()
+int CGlMainWindow::OnClose()
 {
-	LOGMSG_DEBUG(_T("OnClose\n"));
+	ATLTRACE(_T("OnClose\n"));
 	DestroyWindow();
 	return 0;
 }
 
-LRESULT CGlMainWindow::OnDestroy()
+int CGlMainWindow::OnDestroy()
 {
-	LOGMSG_DEBUG(_T("OnDestroy\n"));
-	wglMakeCurrent(NULL, NULL);
-	wglDeleteContext(m_hRC);
-	ReleaseDC(m_hDC);
+	ATLTRACE(_T("OnDestroy\n"));
+
+	if (m_pScene)
+	{
+		delete m_pScene;
+		m_pScene = NULL;
+	}
+
+	if (m_hRC)
+	{
+		wglMakeCurrent(NULL, NULL);
+		wglDeleteContext(m_hRC);
+		m_hRC = NULL;
+	}
+
+	if (m_hDC)
+	{
+		ReleaseDC(m_hDC);
+		m_hDC = NULL;
+	}
+
 	PostQuitMessage(0);
 	return 0;
 }
 
-void CGlMainWindow::Render()
+int CGlMainWindow::OnSize(UINT nType, CSize size)
 {
 	if (m_pScene)
 	{
-		m_pScene->Render(m_Timer.Tick());
-		SwapBuffers(m_hDC);
-	}
-}
-
-LRESULT CGlMainWindow::OnSize(UINT uParam, const CSize& size)
-{
-	if (m_pScene)
 		m_pScene->Resize(size.cx, size.cy);
+	}
 
 	SetMsgHandled(FALSE);
 	return 0;
@@ -165,16 +149,9 @@ LRESULT CGlMainWindow::OnSize(UINT uParam, const CSize& size)
 
 LRESULT CGlMainWindow::OnBenchmark(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	switch (wParam)
-	{
-		case BENCHMARK_FPS:
-		{
-			CString formatter;
-			formatter.Format(_T("%d FPS"), lParam);
-			m_StatusBar.SetPaneText(IDS_FPS_PANE, formatter);
-		} break;
-	}
-
+	CString fmt;
+	fmt.Format(_T("%d FPS"), lParam);
+	m_StatusBar.SetPaneText(ID_INFO_PANE, fmt);
 	return 0;
 }
 
@@ -182,28 +159,28 @@ LRESULT CGlMainWindow::OnBenchmark(UINT uMsg, WPARAM wParam, LPARAM lParam)
 // Main-Menu message handling
 ///////////////////////////////////////////////////////////////////////////////
 
-void CGlMainWindow::OnFileExit(UINT wParam, int lParam, HWND hWnd)
+void CGlMainWindow::OnFileExit(UINT uNotifyCode, int nID, HWND hWnd)
 {
 	PostMessage(WM_CLOSE);
 }
 
-void CGlMainWindow::OnHelpInfo(UINT wParam, int lParam, HWND hWnd)
+void CGlMainWindow::OnHelpInfo(UINT uNotifyCode, int nID, HWND hWnd)
 {
-	::AtlMessageBox(m_hWnd, _T("Info message"), IDR_MAINFRAME);
+	::AtlMessageBox(m_hWnd, IDS_APP_INFO, IDR_MAINFRAME);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Internal method implementation
+// Application logic
 ///////////////////////////////////////////////////////////////////////////////
 
 #define OGL_HELPER_WINDOW _T("CS_WINDOW-Helper")
 
-BOOL CGlMainWindow::InitGlew()
+bool CGlMainWindow::InitGlew()
 {
 	WNDCLASSEX wcex;
 	ZeroMemory(&wcex, sizeof(WNDCLASSEX));
 	wcex.cbSize = sizeof(WNDCLASSEX);
-	wcex.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+	wcex.style = CS_OWNDC;
 	wcex.lpfnWndProc = ::DefWindowProc;
 	wcex.hInstance = _Module.GetModuleInstance();
 	wcex.lpszClassName = OGL_HELPER_WINDOW;
@@ -215,38 +192,58 @@ BOOL CGlMainWindow::InitGlew()
 		0, 0, CW_USEDEFAULT, CW_USEDEFAULT,
 		NULL, NULL, _Module.GetModuleInstance(), NULL);
 
-	BOOL bResult = FALSE;
+	bool bResult = false;
 	if (hWnd)
 	{
 		HDC hDC = ::GetDC(hWnd);
 
-		PIXELFORMATDESCRIPTOR pfd;
-		ZeroMemory(&pfd, sizeof(PIXELFORMATDESCRIPTOR));
-		pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-		pfd.nVersion = 1;
-		pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-		pfd.iPixelType = PFD_TYPE_RGBA;
-		pfd.cColorBits = GetDeviceCaps(m_hDC, BITSPIXEL);
-		pfd.cDepthBits = 16;
-
-		int iPixelFormat = ChoosePixelFormat(hDC, &pfd);
-		if (iPixelFormat && SetPixelFormat(hDC, iPixelFormat, &pfd))
+		if (hDC)
 		{
-			HGLRC hRC = wglCreateContext(hDC);
-			wglMakeCurrent(hDC, hRC);
+			PIXELFORMATDESCRIPTOR pfd;
+			ZeroMemory(&pfd, sizeof(PIXELFORMATDESCRIPTOR));
+			pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+			pfd.nVersion = 1;
+			pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+			pfd.iPixelType = PFD_TYPE_RGBA;
+			pfd.cColorBits = ::GetDeviceCaps(m_hDC, BITSPIXEL);
 
-			bResult = (glewInit() == GLEW_OK)? TRUE : FALSE;
+			int iPixelFormat = ::ChoosePixelFormat(hDC, &pfd);
+			if (iPixelFormat && ::SetPixelFormat(hDC, iPixelFormat, &pfd))
+			{
+				HGLRC hRC = ::wglCreateContext(hDC);
+				::wglMakeCurrent(hDC, hRC);
 
-			wglMakeCurrent(NULL, NULL);
-			wglDeleteContext(hRC);
+				GLenum err = glewInit();
+				if (err != GLEW_OK)
+				{
+					USES_CONVERSION;
+					CString msg(CA2CT(reinterpret_cast<const char*>(glewGetErrorString(err))));
+					ATLTRACE(_T("initGlew: %s\n"), (LPCTSTR)msg);
+				}
+				else bResult = true;
+
+				::wglMakeCurrent(NULL, NULL);
+				::wglDeleteContext(hRC);
+			}
+
+			::ReleaseDC(hWnd, hDC);
 		}
-
-		::ReleaseDC(hWnd, hDC);
 	}
 
 	::DestroyWindow(hWnd);
-
 	::UnregisterClass(OGL_HELPER_WINDOW, _Module.GetModuleInstance());
 
 	return bResult;
+}
+
+void CGlMainWindow::Render()
+{
+	if (!m_hDC || !m_hRC) return;
+
+	if (m_pScene)
+	{
+		m_pScene->Render(m_FrameCounter.Tick() / 10.0f);
+	}
+
+	::SwapBuffers(m_hDC);
 }

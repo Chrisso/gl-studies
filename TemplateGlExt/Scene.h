@@ -1,14 +1,14 @@
 #pragma once
+
 class CScene
 {
 private:
-	unsigned int m_nVertexBuffer;
+	GLuint m_nVertexBuffer = 0;
 
 public:
 	CScene();
 	~CScene();
 
-	void Render(double time);
+	void Render(float time);
 	void Resize(int width, int height);
 };
-
