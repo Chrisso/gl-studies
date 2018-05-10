@@ -88,6 +88,12 @@ int CGlMainWindow::OnCreate(CREATESTRUCT *lpcs)
 	}
 
 	m_pScene = new CScene();
+	if (!m_pScene->Create())
+	{
+		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
+		return -1;
+	}
+
 	m_FrameCounter.SetTargetWindow(m_hWnd);
 
 	USES_CONVERSION;

@@ -201,6 +201,10 @@
     <Image Include="small.ico" />
     <Image Include="TemplateGlExt.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="fragments.glsl" />
+    <None Include="vertices.glsl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
