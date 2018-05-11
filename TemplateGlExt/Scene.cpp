@@ -117,7 +117,7 @@ bool CScene::Create()
 			}
 			else
 			{
-				ATLTRACE("Error linking shader program!\n");
+				ATLTRACE(_T("Error linking shader program!\n"));
 				glGetProgramiv(m_nShaderProgram, GL_INFO_LOG_LENGTH, &status);
 
 				if (status > 1)
@@ -125,7 +125,7 @@ bool CScene::Create()
 					USES_CONVERSION;
 					GLchar *pInfo = new GLchar[status + 1];
 					glGetProgramInfoLog(m_nShaderProgram, status + 1, NULL, pInfo);
-					ATLTRACE("%s\n", (LPCTSTR)CA2CT(pInfo));
+					ATLTRACE(_T("%s\n"), (LPCTSTR)CA2CT(pInfo));
 					delete[] pInfo;
 				}
 
@@ -149,7 +149,7 @@ bool CScene::Create()
 					USES_CONVERSION;
 					GLchar *pInfo = new GLchar[status + 1];
 					glGetShaderInfoLog(shader, status + 1, NULL, pInfo);
-					ATLTRACE("%s\n", (LPCTSTR)CA2CT(pInfo));
+					ATLTRACE(_T("%s\n"), (LPCTSTR)CA2CT(pInfo));
 					delete[] pInfo;
 				}
 			}
