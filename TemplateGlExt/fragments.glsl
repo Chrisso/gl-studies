@@ -1,9 +1,9 @@
 //[FRAGMENT SHADER]
-#version 330 compatibility
+#version 400
 
 out vec4 fragColor;
 
 void main()
 {
-	fragColor = gl_Color;
+	fragColor = vec4(0.0, 1.0, 0.0, 1.0);
 }

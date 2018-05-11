@@ -1,8 +1,11 @@
 //[VERTEX SHADER]
-#version 330 compatibility
+#version 400
+
+uniform mat4 transformation;
+
+in vec3 vertex;
 
 void main()
 {
-	gl_FrontColor = gl_Color;
-	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex; 
+	gl_Position = transformation * vec4(vertex, 1.0); 
 }

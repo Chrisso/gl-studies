@@ -80,7 +80,15 @@ int CGlMainWindow::OnCreate(CREATESTRUCT *lpcs)
 		return -1;
 	}
 
-	m_hRC = wglCreateContext(m_hDC);
+	int nContextAttributes[] = {
+		WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+		WGL_CONTEXT_MINOR_VERSION_ARB, 0,
+		WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+		WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+		0
+	};
+
+	m_hRC = wglCreateContextAttribsARB(m_hDC, NULL, nContextAttributes);
 	if (!m_hRC || !wglMakeCurrent(m_hDC, m_hRC))
 	{
 		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
@@ -101,6 +109,7 @@ int CGlMainWindow::OnCreate(CREATESTRUCT *lpcs)
 	ATLTRACE(_T("GL_RENDERER: %s\n"), (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_RENDERER))));
 	ATLTRACE(_T("GL_VERSION:  %s\n"), (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_VERSION))));
 	ATLTRACE(_T("GL_SLVSN:    %s\n"), (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION))));
+	m_StatusBar.SetPaneText(ID_DEFAULT_PANE, (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_RENDERER))));
 
 	UpdateLayout();
 	SetMsgHandled(FALSE);
@@ -146,6 +155,7 @@ int CGlMainWindow::OnSize(UINT nType, CSize size)
 {
 	if (m_pScene)
 	{
+		glViewport(0, 0, size.cx, size.cy);
 		m_pScene->Resize(size.cx, size.cy);
 	}
 

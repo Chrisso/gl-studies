@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include <initializer_list>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "resource.h"
 #include "Scene.h"
 
@@ -14,12 +16,17 @@ CScene::CScene()
 	glDepthFunc(GL_LEQUAL);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // wireframe
-	glEnableClientState(GL_VERTEX_ARRAY);
 }
 
 CScene::~CScene()
 {
 	ATLTRACE(_T("Cleaning up...\n"));
+
+	if (m_nVertexArray)
+	{
+		glDeleteVertexArrays(1, &m_nVertexArray);
+		m_nVertexArray = 0;
+	}
 
 	if (m_nVertexBuffer)
 	{
@@ -65,6 +72,9 @@ bool CScene::Create()
 {
 	ATLTRACE(_T("Initializing...\n"));
 
+	glGenVertexArrays(1, &m_nVertexArray);
+	glBindVertexArray(m_nVertexArray);
+
 	glGenBuffers(1, &m_nVertexBuffer);
 	if (!m_nVertexBuffer)
 		return false;
@@ -80,6 +90,10 @@ bool CScene::Create()
 	pGeometry[12] = -1.0f; pGeometry[13] = 0.0f; pGeometry[14] = 1.0f;
 	pGeometry[15] = -1.0f; pGeometry[16] = 0.0f; pGeometry[17] = -1.0f;
 	glUnmapBuffer(GL_ARRAY_BUFFER);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
 
 	CStringA vertexShaderSource, fragmentShaderSource;
 	if (LoadShaderSource(IDR_GLSL_VERTEX_SHADER, vertexShaderSource) &&
@@ -167,13 +181,22 @@ void CScene::Render(float time)
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	if (m_nVertexBuffer)
+	m_matMVP = glm::rotate(
+		m_matMVP,
+		glm::radians(-time / 20.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f)
+	);
+
+	glUniformMatrix4fv(
+		glGetUniformLocation(m_nShaderProgram, "transformation"),
+		1, GL_FALSE, glm::value_ptr(m_matMVP)
+	);
+
+	if (m_nVertexArray && m_nVertexBuffer)
 	{
-		glRotatef(-time / 20.0f, 0.0f, 1.0f, 0.0f);
-		glColor3f(0.0f, 1.0f, 0.0f);
-		glBindBuffer(GL_ARRAY_BUFFER, m_nVertexBuffer);
-		glVertexPointer(3, GL_FLOAT, 0, NULL);
+		glBindVertexArray(m_nVertexArray);
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
+		glBindVertexArray(0);
 	}
 }
 
@@ -181,15 +204,12 @@ void CScene::Resize(int width, int height)
 {
 	if (height == 0) height = 1; // avoid division by zero
 
-	glViewport(0, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(45.0f, (GLdouble)width / (GLdouble)height, 0.0f, 32.0f);
+	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.0f, 32.0f);
+	glm::mat4 modelview = glm::lookAt(
+		glm::vec3(0.0f, 2.0f, -5.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f)
+	);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(
-		0.0f, 2.0f, -5.0f,
-		0.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f);
+	m_matMVP = projection * modelview;
 }
