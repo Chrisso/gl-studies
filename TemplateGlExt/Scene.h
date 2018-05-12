@@ -1,18 +1,16 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <ShaderProgram.h>
 
 class CScene
 {
 private:
 	GLuint m_nVertexArray = 0;
 	GLuint m_nVertexBuffer = 0;
-	GLuint m_nShaderProgram = 0;
-
 	glm::mat4 m_matMVP;
 
-protected:
-	static bool LoadShaderSource(int id, CStringA& shader);
+	CShaderProgram *m_pShaderProgram = nullptr;
 
 public:
 	CScene();

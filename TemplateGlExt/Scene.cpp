@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include <initializer_list>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
 #include "resource.h"
 #include "Scene.h"
 
@@ -38,39 +38,16 @@ CScene::~CScene()
 		m_nVertexBuffer = 0;
 	}
 
-	if (m_nShaderProgram)
+	if (m_pShaderProgram)
 	{
-		glDeleteProgram(m_nShaderProgram);
-		m_nShaderProgram = 0;
+		delete m_pShaderProgram;
+		m_pShaderProgram = nullptr;
 	}
 }
 
 /////////////////////////////////////////////////////////////////
 // Method Implementation
 /////////////////////////////////////////////////////////////////
-
-bool CScene::LoadShaderSource(int id, CStringA& shader)
-{
-	HINSTANCE hInst = _Module.GetResourceInstance();
-	HRSRC hResInfo = ::FindResource(hInst, MAKEINTRESOURCE(id), _T("GLSL_SHADER"));
-	if (hResInfo)
-	{
-		HGLOBAL hRes = ::LoadResource(hInst, hResInfo);
-		if (hRes)
-		{
-			LPVOID pResource = ::LockResource(hRes);
-			if (pResource)
-			{
-				shader = CStringA(
-					reinterpret_cast<const char*>(pResource),
-					::SizeofResource(hInst, hResInfo)
-				);
-				return true;
-			}
-		}
-	}
-	return false;
-}
 
 bool CScene::Create()
 {
@@ -99,85 +76,19 @@ bool CScene::Create()
 	glEnableVertexAttribArray(0);
 	glBindVertexArray(0);
 
-	CStringA vertexShaderSource, fragmentShaderSource;
-	if (LoadShaderSource(IDR_GLSL_VERTEX_SHADER, vertexShaderSource) &&
-		LoadShaderSource(IDR_GLSL_FRAGMENT_SHADER, fragmentShaderSource))
+	m_pShaderProgram = new CShaderProgram();
+
+	if (!m_pShaderProgram->Create(
+		_Module.GetResourceInstance(), _T("GLSL_SHADER"),
+		IDR_GLSL_VERTEX_SHADER,
+		IDR_GLSL_FRAGMENT_SHADER))
 	{
-		const GLchar *pSource = vertexShaderSource.GetString();
-		GLuint nVS = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(nVS, 1, &pSource, NULL);
-		glCompileShader(nVS);
-
-		pSource = fragmentShaderSource.GetString();
-		GLuint nFS = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(nFS, 1, &pSource, NULL);
-		glCompileShader(nFS);
-
-		GLint statusVS = GL_FALSE;
-		glGetShaderiv(nVS, GL_COMPILE_STATUS, &statusVS);
-
-		GLint statusFS = GL_FALSE;
-		glGetShaderiv(nFS, GL_COMPILE_STATUS, &statusFS);
-
-		if (statusVS == GL_TRUE && statusFS == GL_TRUE)
-		{
-			m_nShaderProgram = glCreateProgram();
-			glAttachShader(m_nShaderProgram, nVS);
-			glAttachShader(m_nShaderProgram, nFS);
-			glLinkProgram(m_nShaderProgram);
-
-			GLint status = GL_FALSE;
-			glGetProgramiv(m_nShaderProgram, GL_LINK_STATUS, &status);
-			if (status == GL_TRUE)
-			{
-				ATLTRACE(_T("Rendering with shaders.\n"));
-				glUseProgram(m_nShaderProgram);
-			}
-			else
-			{
-				ATLTRACE(_T("Error linking shader program!\n"));
-				glGetProgramiv(m_nShaderProgram, GL_INFO_LOG_LENGTH, &status);
-
-				if (status > 1)
-				{
-					USES_CONVERSION;
-					GLchar *pInfo = new GLchar[status + 1];
-					glGetProgramInfoLog(m_nShaderProgram, status + 1, NULL, pInfo);
-					ATLTRACE(_T("%s\n"), (LPCTSTR)CA2CT(pInfo));
-					delete[] pInfo;
-				}
-
-				glDeleteProgram(m_nShaderProgram);
-				m_nShaderProgram = 0;
-			}
-
-			glDetachShader(m_nShaderProgram, nFS);
-			glDetachShader(m_nShaderProgram, nVS);
-		}
-		else
-		{
-			ATLTRACE(_T("Eror compiling shaders!\n"));
-
-			for (GLuint shader : {nVS, nFS})
-			{
-				GLint status = 0;
-				glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &status);
-				if (status > 1)
-				{
-					USES_CONVERSION;
-					GLchar *pInfo = new GLchar[status + 1];
-					glGetShaderInfoLog(shader, status + 1, NULL, pInfo);
-					ATLTRACE(_T("%s\n"), (LPCTSTR)CA2CT(pInfo));
-					delete[] pInfo;
-				}
-			}
-		}
-
-		if (nVS) glDeleteShader(nVS);
-		if (nFS) glDeleteShader(nFS);
+		// trigger immediate window destroy and thus cascading destructor
+		return false;
 	}
 
-	return m_nShaderProgram != 0;
+	glUseProgram(*m_pShaderProgram);
+	return true;
 }
 
 void CScene::Render(float time)
@@ -192,7 +103,7 @@ void CScene::Render(float time)
 	);
 
 	glUniformMatrix4fv(
-		glGetUniformLocation(m_nShaderProgram, "transformation"),
+		glGetUniformLocation(*m_pShaderProgram, "transformation"),
 		1, GL_FALSE, glm::value_ptr(m_matMVP)
 	);
 

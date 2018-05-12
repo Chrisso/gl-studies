@@ -2,9 +2,9 @@
 
 #include <atlctrlw.h>
 #include <atlctrlx.h>
-#include "Resource.h"
+#include <FrameCounter.h>
 
-#include "FrameCounter.h"
+#include "Resource.h"
 #include "Scene.h"
 
 class CGlMainWindow : public CFrameWindowImpl<CGlMainWindow>
