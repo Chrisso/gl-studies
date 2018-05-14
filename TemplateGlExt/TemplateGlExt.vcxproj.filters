@@ -68,5 +68,11 @@
     <None Include="vertices.glsl">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="text-fragments.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="text-vertices.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

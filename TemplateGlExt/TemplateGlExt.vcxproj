@@ -202,6 +202,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="fragments.glsl" />
+    <None Include="text-fragments.glsl" />
+    <None Include="text-vertices.glsl" />
     <None Include="vertices.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
