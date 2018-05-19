@@ -111,7 +111,7 @@ bool CScene::Create()
 		return false;
 
 	m_pTextureFont = new CTextureFont();
-	if (!m_pTextureFont->Create())
+	if (!m_pTextureFont->Create(_Module.GetResourceInstance(), RT_FONT, IDR_FONT_OPENSANS))
 	{
 		ATLTRACE(_T("Error initializing texture font!\n"));
 		return false;
