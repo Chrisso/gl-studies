@@ -35,6 +35,11 @@ IDR_GLSL_VERTEX_SHADER  GLSL_SHADER             "vertices.glsl"
 
 IDR_GLSL_FRAGMENT_SHADER GLSL_SHADER             "fragments.glsl"
 
+IDR_GLSL_TEXTVERTEX_SHADER GLSL_SHADER             "text-vertices.glsl"
+
+IDR_GLSL_TEXTFRAGMENT_SHADER GLSL_SHADER             "text-fragments.glsl"
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Icon
@@ -96,6 +101,14 @@ BEGIN
 END
 
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Font
+//
+
+IDR_FONT_OPENSANS       FONT                    "opensans.ttf"
 
 
 /////////////////////////////////////////////////////////////////////////////

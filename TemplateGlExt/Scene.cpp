@@ -19,7 +19,6 @@ CScene::CScene()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // wireframe
 }
 
 CScene::~CScene()
@@ -36,6 +35,24 @@ CScene::~CScene()
 	{
 		glDeleteBuffers(1, &m_nVertexBuffer);
 		m_nVertexBuffer = 0;
+	}
+
+	if (m_pRenderString)
+	{
+		delete m_pRenderString;
+		m_pRenderString = nullptr;
+	}
+
+	if (m_pTextureFont)
+	{
+		delete m_pTextureFont;
+		m_pTextureFont = nullptr;
+	}
+
+	if (m_pFontShader)
+	{
+		delete m_pFontShader;
+		m_pFontShader = nullptr;
 	}
 
 	if (m_pShaderProgram)
@@ -77,7 +94,6 @@ bool CScene::Create()
 	glBindVertexArray(0);
 
 	m_pShaderProgram = new CShaderProgram();
-
 	if (!m_pShaderProgram->Create(
 		_Module.GetResourceInstance(), _T("GLSL_SHADER"),
 		IDR_GLSL_VERTEX_SHADER,
@@ -87,7 +103,32 @@ bool CScene::Create()
 		return false;
 	}
 
-	glUseProgram(*m_pShaderProgram);
+	m_pFontShader = new CShaderProgram();
+	if (!m_pFontShader->Create(
+		_Module.GetResourceInstance(), _T("GLSL_SHADER"),
+		IDR_GLSL_TEXTVERTEX_SHADER,
+		IDR_GLSL_TEXTFRAGMENT_SHADER))
+		return false;
+
+	m_pTextureFont = new CTextureFont();
+	if (!m_pTextureFont->Create(_Module.GetResourceInstance(), RT_FONT, IDR_FONT_OPENSANS))
+	{
+		ATLTRACE(_T("Error initializing texture font!\n"));
+		return false;
+	}
+
+	USES_CONVERSION;
+
+	m_pRenderString = new CRenderString();
+	if (!m_pRenderString->CreateFormat(
+		*m_pTextureFont,
+		_T("OpenGL %s"),
+		(LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_VERSION)))))
+	{
+		ATLTRACE(_T("Error creating text rendering resources!\n"));
+		return false;
+	}
+
 	return true;
 }
 
@@ -96,23 +137,44 @@ void CScene::Render(float time)
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	m_matMVP = glm::rotate(
-		m_matMVP,
+	glUseProgram(*m_pShaderProgram);
+
+	m_matSceneMVP = glm::rotate(
+		m_matSceneMVP,
 		glm::radians(-time / 20.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f)
 	);
 
 	glUniformMatrix4fv(
 		glGetUniformLocation(*m_pShaderProgram, "transformation"),
-		1, GL_FALSE, glm::value_ptr(m_matMVP)
+		1, GL_FALSE, glm::value_ptr(m_matSceneMVP)
 	);
 
 	if (m_nVertexArray && m_nVertexBuffer)
 	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // wireframe
 		glBindVertexArray(m_nVertexArray);
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
 		glBindVertexArray(0);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
+
+	glUseProgram(*m_pFontShader);
+
+	glm::mat4 matText = glm::translate(m_matHudMVP, glm::vec3(10.0f, 64.0f, 0.0f));
+
+	glUniformMatrix4fv(
+		glGetUniformLocation(*m_pFontShader, "transformation"),
+		1, GL_FALSE, glm::value_ptr(matText)
+	);
+
+	glDisable(GL_DEPTH_TEST);
+	glBindTexture(GL_TEXTURE_2D, *m_pTextureFont);
+	glBindVertexArray(*m_pRenderString);
+	glDrawArrays(GL_TRIANGLES, 0, m_pRenderString->NumVertices());
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glEnable(GL_DEPTH_TEST);
 }
 
 void CScene::Resize(int width, int height)
@@ -126,5 +188,7 @@ void CScene::Resize(int width, int height)
 		glm::vec3(0.0f, 1.0f, 0.0f)
 	);
 
-	m_matMVP = projection * modelview;
+	m_matSceneMVP = projection * modelview;
+
+	m_matHudMVP = glm::ortho(0.0f, (GLfloat)width, (GLfloat)height, 0.0f);
 }
