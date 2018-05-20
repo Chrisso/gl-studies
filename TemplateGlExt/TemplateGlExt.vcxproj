@@ -199,17 +199,17 @@
     <ResourceCompile Include="TemplateGlExt.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="small.ico" />
-    <Image Include="TemplateGlExt.ico" />
+    <Image Include="Resources\small.ico" />
+    <Image Include="Resources\TemplateGlExt.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="fragments.glsl" />
-    <None Include="text-fragments.glsl" />
-    <None Include="text-vertices.glsl" />
-    <None Include="vertices.glsl" />
+    <None Include="Resources\fragments.glsl" />
+    <None Include="Resources\text-fragments.glsl" />
+    <None Include="Resources\text-vertices.glsl" />
+    <None Include="Resources\vertices.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <Font Include="opensans.ttf" />
+    <Font Include="Resources\opensans.ttf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

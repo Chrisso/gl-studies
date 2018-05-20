@@ -31,13 +31,13 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // GLSL_SHADER
 //
 
-IDR_GLSL_VERTEX_SHADER  GLSL_SHADER             "vertices.glsl"
+IDR_GLSL_VERTEX_SHADER  GLSL_SHADER             "Resources\\vertices.glsl"
 
-IDR_GLSL_FRAGMENT_SHADER GLSL_SHADER             "fragments.glsl"
+IDR_GLSL_FRAGMENT_SHADER GLSL_SHADER             "Resources\\fragments.glsl"
 
-IDR_GLSL_TEXTVERTEX_SHADER GLSL_SHADER             "text-vertices.glsl"
+IDR_GLSL_TEXTVERTEX_SHADER GLSL_SHADER             "Resources\\text-vertices.glsl"
 
-IDR_GLSL_TEXTFRAGMENT_SHADER GLSL_SHADER             "text-fragments.glsl"
+IDR_GLSL_TEXTFRAGMENT_SHADER GLSL_SHADER             "Resources\\text-fragments.glsl"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -47,9 +47,9 @@ IDR_GLSL_TEXTFRAGMENT_SHADER GLSL_SHADER             "text-fragments.glsl"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_SMALL               ICON                    "small.ico"
+IDI_SMALL               ICON                    "Resources\\small.ico"
 
-IDR_MAINFRAME           ICON                    "TemplateGlExt.ico"
+IDR_MAINFRAME           ICON                    "Resources\\TemplateGlExt.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -108,7 +108,7 @@ END
 // Font
 //
 
-IDR_FONT_OPENSANS       FONT                    "opensans.ttf"
+IDR_FONT_OPENSANS       FONT                    "Resources\\opensans.ttf"
 
 
 /////////////////////////////////////////////////////////////////////////////

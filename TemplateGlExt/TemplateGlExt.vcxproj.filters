@@ -60,29 +60,29 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="small.ico">
+    <Image Include="Resources\small.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="TemplateGlExt.ico">
+    <Image Include="Resources\TemplateGlExt.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="fragments.glsl">
+    <None Include="Resources\fragments.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="vertices.glsl">
+    <None Include="Resources\vertices.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="text-fragments.glsl">
+    <None Include="Resources\text-fragments.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="text-vertices.glsl">
+    <None Include="Resources\text-vertices.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Font Include="opensans.ttf">
+    <Font Include="Resources\opensans.ttf">
       <Filter>Resource Files</Filter>
     </Font>
   </ItemGroup>
