@@ -53,11 +53,10 @@ int CGlMainWindow::OnCreate(CREATESTRUCT *lpcs)
 	});
 
 	USES_CONVERSION;
-	ATLTRACE(_T("GL_VENDOR:   %s\n"), (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_VENDOR))));
-	ATLTRACE(_T("GL_RENDERER: %s\n"), (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_RENDERER))));
-	ATLTRACE(_T("GL_VERSION:  %s\n"), (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_VERSION))));
-	ATLTRACE(_T("GL_SLVSN:    %s\n"), (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION))));
-	m_StatusBar.SetPaneText(ID_DEFAULT_PANE, (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_RENDERER))));
+	m_StatusBar.SetPaneText(
+		ID_DEFAULT_PANE,
+		(LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_RENDERER)))
+	);
 
 	UpdateLayout();
 	SetMsgHandled(FALSE);
@@ -142,17 +141,24 @@ bool CGlMainWindow::InitGlew()
 			int iPixelFormat = ::ChoosePixelFormat(hDC, &pfd);
 			if (iPixelFormat && ::SetPixelFormat(hDC, iPixelFormat, &pfd))
 			{
+				USES_CONVERSION;
 				HGLRC hRC = ::wglCreateContext(hDC);
 				::wglMakeCurrent(hDC, hRC);
 
 				GLenum err = glewInit();
-				if (err != GLEW_OK)
+				if (err == GLEW_OK)
 				{
-					USES_CONVERSION;
+					ATLTRACE(_T("GL_VENDOR:   %s\n"), (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_VENDOR))));
+					ATLTRACE(_T("GL_RENDERER: %s\n"), (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_RENDERER))));
+					ATLTRACE(_T("GL_VERSION:  %s\n"), (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_VERSION))));
+					ATLTRACE(_T("GL_SLVSN:    %s\n"), (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION))));
+					bResult = true;
+				}
+				else
+				{
 					CString msg(CA2CT(reinterpret_cast<const char*>(glewGetErrorString(err))));
 					ATLTRACE(_T("initGlew: %s\n"), (LPCTSTR)msg);
 				}
-				else bResult = true;
 
 				::wglMakeCurrent(NULL, NULL);
 				::wglDeleteContext(hRC);
