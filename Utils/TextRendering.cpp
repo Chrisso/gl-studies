@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include <cstdarg>
-#include <algorithm>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -33,6 +32,43 @@ bool CTextureFont::Create(HINSTANCE hInst, LPCTSTR szResType, int nResId, int nS
 	m_nWidth = m_nFontSize * 16;
 	m_nHeight = m_nFontSize * 16;
 
+	HRSRC hResInfo = ::FindResource(hInst, MAKEINTRESOURCE(nResId), szResType);
+	if (!hResInfo)
+	{
+		ATLTRACE(_T("Could not find font resource!\n"));
+		return false;
+	}
+
+	HGLOBAL hRes = ::LoadResource(hInst, hResInfo);
+	if (!hRes)
+	{
+		ATLTRACE(_T("Could not load font resource!\n"));
+		return false;
+	}
+
+	LPVOID pResource = ::LockResource(hRes);
+	if (!pResource)
+	{
+		ATLTRACE(_T("Could not lock font resource!\n"));
+		return false;
+	}
+
+	FT_Library pFT;
+	if (FT_Init_FreeType(&pFT) != FT_Err_Ok)
+	{
+		ATLTRACE(_T("Could not initialize freetype library!\n"));
+		return false;
+	}
+
+	bool bResult = false;
+
+	FT_Face pFace;
+	if (FT_New_Memory_Face(pFT, static_cast<FT_Byte*>(pResource), ::SizeofResource(hInst, hResInfo), 0, &pFace) != FT_Err_Ok)
+	{
+		ATLTRACE(_T("Could not create freetype font from memory!\n"));
+		return false;
+	}
+
 	glActiveTexture(GL_TEXTURE0);
 	glGenTextures(1, &m_nTexture);
 	glBindTexture(GL_TEXTURE_2D, m_nTexture);
@@ -41,64 +77,40 @@ bool CTextureFont::Create(HINSTANCE hInst, LPCTSTR szResType, int nResId, int nS
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	bool bResult = false;
-	HRSRC hResInfo = ::FindResource(hInst, MAKEINTRESOURCE(nResId), szResType);
-	if (hResInfo)
-	{
-		HGLOBAL hRes = ::LoadResource(hInst, hResInfo);
-		if (hRes)
-		{
-			LPVOID pResource = ::LockResource(hRes);
-			if (pResource)
-			{
-				FT_Library pFT;
-				if (FT_Init_FreeType(&pFT) == FT_Err_Ok)
-				{
-					FT_Face pFace;
-					if (FT_New_Memory_Face(pFT, static_cast<FT_Byte*>(pResource), ::SizeofResource(hInst, hResInfo), 0, &pFace) == FT_Err_Ok)
-					{
-						ATLTRACE(_T("Freetype ready\n"));
-						FT_Set_Pixel_Sizes(pFace, 0, m_nFontSize);
+	FT_Set_Pixel_Sizes(pFace, 0, m_nFontSize);
 
-						GLfloat fNorm = 1.0f / m_nWidth;
+	GLfloat fNorm = 1.0f / m_nWidth;
 						
-						for (int x = 0; x < 16; x++)
-							for (int y = 0; y < 16; y++)
-							{
-								wchar_t character = y * 16 + x;
-								if (FT_Load_Char(pFace, character, FT_LOAD_RENDER) == FT_Err_Ok)
-								{
-									glTexSubImage2D(
-										GL_TEXTURE_2D, 0,
-										x * m_nFontSize, y * m_nFontSize,
-										pFace->glyph->bitmap.width, pFace->glyph->bitmap.rows,
-										GL_RED, GL_UNSIGNED_BYTE,
-										pFace->glyph->bitmap.buffer);
+	for (int x = 0; x < 16; x++)
+		for (int y = 0; y < 16; y++)
+		{
+			wchar_t character = y * 16 + x;
+			if (FT_Load_Char(pFace, character, FT_LOAD_RENDER) == FT_Err_Ok)
+			{
+				glTexSubImage2D(
+					GL_TEXTURE_2D, 0,
+					x * m_nFontSize, y * m_nFontSize,
+					pFace->glyph->bitmap.width, pFace->glyph->bitmap.rows,
+					GL_RED, GL_UNSIGNED_BYTE,
+					pFace->glyph->bitmap.buffer);
 
-									m_Glyphs[character].advance = pFace->glyph->advance.x / 64.0f;
-									m_Glyphs[character].size.x = (GLfloat)pFace->glyph->bitmap.width;
-									m_Glyphs[character].size.y = (GLfloat)pFace->glyph->bitmap.rows;
-									m_Glyphs[character].bearing.x = (GLfloat)pFace->glyph->bitmap_left;
-									m_Glyphs[character].bearing.y = (GLfloat)pFace->glyph->bitmap_top;
+				m_Glyphs[character].advance = pFace->glyph->advance.x / 64.0f;
+				m_Glyphs[character].size.x = (GLfloat)pFace->glyph->bitmap.width;
+				m_Glyphs[character].size.y = (GLfloat)pFace->glyph->bitmap.rows;
+				m_Glyphs[character].bearing.x = (GLfloat)pFace->glyph->bitmap_left;
+				m_Glyphs[character].bearing.y = (GLfloat)pFace->glyph->bitmap_top;
 
-									m_Glyphs[character].tex0.x = x * m_nFontSize * fNorm;
-									m_Glyphs[character].tex0.y = y * m_nFontSize * fNorm;
-									m_Glyphs[character].tex1.x = (x * m_nFontSize + pFace->glyph->bitmap.width) * fNorm;
-									m_Glyphs[character].tex1.y = (y * m_nFontSize + pFace->glyph->bitmap.rows) * fNorm;
-								}
-							}
-
-						FT_Done_Face(pFace);
-						bResult = true;
-					}
-				}
+				m_Glyphs[character].tex0.x = x * m_nFontSize * fNorm;
+				m_Glyphs[character].tex0.y = y * m_nFontSize * fNorm;
+				m_Glyphs[character].tex1.x = (x * m_nFontSize + pFace->glyph->bitmap.width) * fNorm;
+				m_Glyphs[character].tex1.y = (y * m_nFontSize + pFace->glyph->bitmap.rows) * fNorm;
 			}
 		}
-	}
 
+	FT_Done_Face(pFace);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	return bResult;
+	return true;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -170,7 +182,7 @@ bool CRenderString::Create(const CTextureFont& font, LPCTSTR szText)
 	ATLASSERT(pData != nullptr);
 	for (int i = 0; i < len; i++)
 	{
-		const glyph_desc& gd = font[std::min(txt[i], (wchar_t)255)];
+		const glyph_desc& gd = font[txt[i] > 255 ? 0 : txt[i]];
 		pData[i * 12 +  0] = advance + gd.bearing.x;
 		pData[i * 12 +  1] = -gd.bearing.y;
 		pData[i * 12 +  2] = advance + gd.bearing.x;
@@ -198,7 +210,7 @@ bool CRenderString::Create(const CTextureFont& font, LPCTSTR szText)
 	ATLASSERT(pData != nullptr);
 	for (int i = 0; i < len; i++)
 	{
-		const glyph_desc& gd = font[std::min(txt[i], (wchar_t)255)];
+		const glyph_desc& gd = font[txt[i] > 255 ? 0 : txt[i]];
 		pData[i * 12 +  0] = gd.tex0.s; pData[i * 12 +  1] = gd.tex0.t;
 		pData[i * 12 +  2] = gd.tex0.s; pData[i * 12 +  3] = gd.tex1.t;
 		pData[i * 12 +  4] = gd.tex1.s; pData[i * 12 +  5] = gd.tex1.t;
