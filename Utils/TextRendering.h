@@ -18,7 +18,7 @@ private:
 	GLuint m_nTexture = 0;
 	GLsizei m_nWidth = 0;
 	GLsizei m_nHeight = 0;
-	GLsizei m_nFontSize = 0;
+	GLsizei m_nTextHeight = 0;
 
 	std::vector<glyph_desc> m_Glyphs;
 
@@ -31,7 +31,7 @@ public:
 	operator GLuint() const { return m_nTexture; }
 	GLsizei GetWidth() const { return m_nWidth; }
 	GLsizei GetHeight() const { return m_nHeight;  }
-	GLsizei GetFontSize() const { return m_nFontSize; }
+	GLsizei GetTextHeight() const { return m_nTextHeight; }
 
 	const glyph_desc& operator[](size_t n) const { return m_Glyphs[n]; }
 };
@@ -42,7 +42,8 @@ private:
 	GLuint m_nVertexArray = 0;
 	GLuint m_nVertexCoords = 0;
 	GLuint m_nTextureCoords = 0;
-	GLsizei m_nVertices;
+	GLsizei m_nVertices = 0;
+	GLfloat m_fTextWidth = 0.0f;
 
 public:
 	CRenderString();
@@ -53,4 +54,5 @@ public:
 
 	operator GLuint() const { return m_nVertexArray; }
 	GLsizei NumVertices() const { return m_nVertices; }
+	GLfloat GetTextWidth() const { return m_fTextWidth; }
 };

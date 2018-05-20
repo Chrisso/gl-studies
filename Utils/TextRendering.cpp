@@ -28,9 +28,9 @@ CTextureFont::~CTextureFont()
 
 bool CTextureFont::Create(HINSTANCE hInst, LPCTSTR szResType, int nResId, int nSize)
 {
-	m_nFontSize = nSize;
-	m_nWidth = m_nFontSize * 16;
-	m_nHeight = m_nFontSize * 16;
+	m_nTextHeight = nSize;
+	m_nWidth = m_nTextHeight * 16;
+	m_nHeight = m_nTextHeight * 16;
 
 	HRSRC hResInfo = ::FindResource(hInst, MAKEINTRESOURCE(nResId), szResType);
 	if (!hResInfo)
@@ -77,7 +77,7 @@ bool CTextureFont::Create(HINSTANCE hInst, LPCTSTR szResType, int nResId, int nS
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	FT_Set_Pixel_Sizes(pFace, 0, m_nFontSize);
+	FT_Set_Pixel_Sizes(pFace, 0, m_nTextHeight);
 
 	GLfloat fNorm = 1.0f / m_nWidth;
 						
@@ -89,7 +89,7 @@ bool CTextureFont::Create(HINSTANCE hInst, LPCTSTR szResType, int nResId, int nS
 			{
 				glTexSubImage2D(
 					GL_TEXTURE_2D, 0,
-					x * m_nFontSize, y * m_nFontSize,
+					x * m_nTextHeight, y * m_nTextHeight,
 					pFace->glyph->bitmap.width, pFace->glyph->bitmap.rows,
 					GL_RED, GL_UNSIGNED_BYTE,
 					pFace->glyph->bitmap.buffer);
@@ -100,10 +100,10 @@ bool CTextureFont::Create(HINSTANCE hInst, LPCTSTR szResType, int nResId, int nS
 				m_Glyphs[character].bearing.x = (GLfloat)pFace->glyph->bitmap_left;
 				m_Glyphs[character].bearing.y = (GLfloat)pFace->glyph->bitmap_top;
 
-				m_Glyphs[character].tex0.x = x * m_nFontSize * fNorm;
-				m_Glyphs[character].tex0.y = y * m_nFontSize * fNorm;
-				m_Glyphs[character].tex1.x = (x * m_nFontSize + pFace->glyph->bitmap.width) * fNorm;
-				m_Glyphs[character].tex1.y = (y * m_nFontSize + pFace->glyph->bitmap.rows) * fNorm;
+				m_Glyphs[character].tex0.x = x * m_nTextHeight * fNorm;
+				m_Glyphs[character].tex0.y = y * m_nTextHeight * fNorm;
+				m_Glyphs[character].tex1.x = (x * m_nTextHeight + pFace->glyph->bitmap.width) * fNorm;
+				m_Glyphs[character].tex1.y = (y * m_nTextHeight + pFace->glyph->bitmap.rows) * fNorm;
 			}
 		}
 
@@ -176,26 +176,24 @@ bool CRenderString::Create(const CTextureFont& font, LPCTSTR szText)
 	glBindBuffer(GL_ARRAY_BUFFER, m_nVertexCoords);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 2 * m_nVertices, NULL, GL_STATIC_DRAW);
 
-	GLfloat advance = 0.0f;
-
 	pData = reinterpret_cast<float*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
 	ATLASSERT(pData != nullptr);
 	for (int i = 0; i < len; i++)
 	{
 		const glyph_desc& gd = font[txt[i] > 255 ? 0 : txt[i]];
-		pData[i * 12 +  0] = advance + gd.bearing.x;
+		pData[i * 12 +  0] = m_fTextWidth + gd.bearing.x;
 		pData[i * 12 +  1] = -gd.bearing.y;
-		pData[i * 12 +  2] = advance + gd.bearing.x;
+		pData[i * 12 +  2] = m_fTextWidth + gd.bearing.x;
 		pData[i * 12 +  3] = -gd.bearing.y + gd.size.y;
-		pData[i * 12 +  4] = advance + gd.bearing.x + gd.size.x;
+		pData[i * 12 +  4] = m_fTextWidth + gd.bearing.x + gd.size.x;
 		pData[i * 12 +  5] = -gd.bearing.y + gd.size.y;
-		pData[i * 12 +  6] = advance + gd.bearing.x + gd.size.x;
+		pData[i * 12 +  6] = m_fTextWidth + gd.bearing.x + gd.size.x;
 		pData[i * 12 +  7] = -gd.bearing.y;
-		pData[i * 12 +  8] = advance + gd.bearing.x;
+		pData[i * 12 +  8] = m_fTextWidth + gd.bearing.x;
 		pData[i * 12 +  9] = -gd.bearing.y;
-		pData[i * 12 + 10] = advance + gd.bearing.x + gd.size.x;
+		pData[i * 12 + 10] = m_fTextWidth + gd.bearing.x + gd.size.x;
 		pData[i * 12 + 11] = -gd.bearing.y + gd.size.y;
-		advance += gd.advance;
+		m_fTextWidth += gd.advance;
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
