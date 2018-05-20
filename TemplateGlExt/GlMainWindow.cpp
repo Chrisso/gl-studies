@@ -48,7 +48,9 @@ int CGlMainWindow::OnCreate(CREATESTRUCT *lpcs)
 		WS_EX_CLIENTEDGE
 	);
 
-	m_FrameCounter.SetTargetWindow(m_hWnd);
+	m_FrameCounter.Subscribe([this](size_t fps) {
+		::PostMessage(this->m_hWnd, WM_APP_BENCHMARK, 0, (LPARAM)fps);
+	});
 
 	USES_CONVERSION;
 	ATLTRACE(_T("GL_VENDOR:   %s\n"), (LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_VENDOR))));

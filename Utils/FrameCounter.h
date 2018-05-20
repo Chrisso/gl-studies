@@ -1,6 +1,9 @@
 #pragma once
 
-#define WM_APP_BENCHMARK (WM_APP+10)
+#include <functional>
+#include <forward_list>
+
+typedef std::function<void(size_t)> fps_notification_t;
 
 class CFrameCounter
 {
@@ -12,10 +15,10 @@ private:
 	__int64 m_nFramesTime = 0;
 	__int64 m_nFramesPerSecond = 0;
 
-	HWND m_hTarget;
+	std::forward_list<fps_notification_t> m_FpsSubscribers;
 
 public:
-	CFrameCounter() : m_hTarget(NULL)
+	CFrameCounter()
 	{
 		::QueryPerformanceFrequency(&m_nPerfFreqency);
 		::QueryPerformanceCounter(&m_nPerfLatest);
@@ -38,8 +41,10 @@ public:
 			m_nFrames = 0;
 			m_nFramesTime -= m_nPerfFreqency.QuadPart;
 
-			if (m_hTarget)
-				::PostMessage(m_hTarget, WM_APP_BENCHMARK, 0, (LPARAM)m_nFramesPerSecond);
+			for (auto func : m_FpsSubscribers)
+			{
+				func(static_cast<size_t>(m_nFramesPerSecond));
+			}
 		}
 
 		// milliseconds * 10
@@ -52,8 +57,8 @@ public:
 		return static_cast<size_t>(m_nFramesPerSecond);
 	}
 
-	void SetTargetWindow(HWND hWnd)
+	void Subscribe(fps_notification_t target)
 	{
-		m_hTarget = hWnd;
+		m_FpsSubscribers.push_front(target);
 	}
 };

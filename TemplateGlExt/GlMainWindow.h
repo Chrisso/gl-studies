@@ -7,6 +7,8 @@
 #include "Resource.h"
 #include "GlView.h"
 
+#define WM_APP_BENCHMARK (WM_APP+10)
+
 class CGlMainWindow : public CFrameWindowImpl<CGlMainWindow>
 {
 private:
