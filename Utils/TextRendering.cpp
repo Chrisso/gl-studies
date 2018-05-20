@@ -1,4 +1,6 @@
 #include "stdafx.h"
+#include <cstdarg>
+#include <algorithm>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -68,21 +70,21 @@ bool CTextureFont::Create(HINSTANCE hInst, LPCTSTR szResType, int nResId, int nS
 								{
 									glTexSubImage2D(
 										GL_TEXTURE_2D, 0,
-										x * 16, y * 16,
+										x * m_nFontSize, y * m_nFontSize,
 										pFace->glyph->bitmap.width, pFace->glyph->bitmap.rows,
 										GL_RED, GL_UNSIGNED_BYTE,
 										pFace->glyph->bitmap.buffer);
 
-									m_Glyphs[character].advance = pFace->glyph->advance.x * 64.0f;
-									m_Glyphs[character].size.x = pFace->glyph->bitmap.width;
-									m_Glyphs[character].size.y = pFace->glyph->bitmap.rows;
-									m_Glyphs[character].bearing.x = pFace->glyph->bitmap_left;
-									m_Glyphs[character].bearing.y = pFace->glyph->bitmap_top;
+									m_Glyphs[character].advance = pFace->glyph->advance.x / 64.0f;
+									m_Glyphs[character].size.x = (GLfloat)pFace->glyph->bitmap.width;
+									m_Glyphs[character].size.y = (GLfloat)pFace->glyph->bitmap.rows;
+									m_Glyphs[character].bearing.x = (GLfloat)pFace->glyph->bitmap_left;
+									m_Glyphs[character].bearing.y = (GLfloat)pFace->glyph->bitmap_top;
 
-									m_Glyphs[character].tex0.x = x * 16 * fNorm;
-									m_Glyphs[character].tex0.y = y * 16 * fNorm;
-									m_Glyphs[character].tex1.x = (x * 16 + pFace->glyph->bitmap.width) * fNorm;
-									m_Glyphs[character].tex1.y = (y * 16 + pFace->glyph->bitmap.rows) * fNorm;
+									m_Glyphs[character].tex0.x = x * m_nFontSize * fNorm;
+									m_Glyphs[character].tex0.y = y * m_nFontSize * fNorm;
+									m_Glyphs[character].tex1.x = (x * m_nFontSize + pFace->glyph->bitmap.width) * fNorm;
+									m_Glyphs[character].tex1.y = (y * m_nFontSize + pFace->glyph->bitmap.rows) * fNorm;
 								}
 							}
 
@@ -133,8 +135,24 @@ CRenderString::~CRenderString()
 // CRenderString - Method Implementation
 /////////////////////////////////////////////////////////////////
 
-bool CRenderString::Create(const CTextureFont& font)
+bool CRenderString::CreateFormat(const CTextureFont& font, LPCTSTR szFmt, ...)
 {
+	CString formatter;
+
+	va_list args;
+	va_start(args, szFmt);
+	formatter.FormatV(szFmt, args);
+	va_end(args);
+
+	return Create(font, (LPCTSTR)formatter);
+}
+
+bool CRenderString::Create(const CTextureFont& font, LPCTSTR szText)
+{
+	CStringW txt(szText);
+	int len = txt.GetLength();
+	m_nVertices = len * 6;
+
 	GLfloat *pData = nullptr;
 	GLfloat w = (GLfloat)font.GetWidth();
 	GLfloat h = (GLfloat)font.GetHeight();
@@ -144,16 +162,29 @@ bool CRenderString::Create(const CTextureFont& font)
 
 	glGenBuffers(1, &m_nVertexCoords);
 	glBindBuffer(GL_ARRAY_BUFFER, m_nVertexCoords);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, NULL, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 2 * m_nVertices, NULL, GL_STATIC_DRAW);
+
+	GLfloat advance = 0.0f;
 
 	pData = reinterpret_cast<float*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
 	ATLASSERT(pData != nullptr);
-	pData[ 0] = 0; pData[ 1] = 0;
-	pData[ 2] = 0; pData[ 3] = h;
-	pData[ 4] = w; pData[ 5] = h;
-	pData[ 6] = w; pData[ 7] = 0;
-	pData[ 8] = 0; pData[ 9] = 0;
-	pData[10] = w; pData[11] = h;
+	for (int i = 0; i < len; i++)
+	{
+		const glyph_desc& gd = font[std::min(txt[i], (wchar_t)255)];
+		pData[i * 12 +  0] = advance + gd.bearing.x;
+		pData[i * 12 +  1] = -gd.bearing.y;
+		pData[i * 12 +  2] = advance + gd.bearing.x;
+		pData[i * 12 +  3] = -gd.bearing.y + gd.size.y;
+		pData[i * 12 +  4] = advance + gd.bearing.x + gd.size.x;
+		pData[i * 12 +  5] = -gd.bearing.y + gd.size.y;
+		pData[i * 12 +  6] = advance + gd.bearing.x + gd.size.x;
+		pData[i * 12 +  7] = -gd.bearing.y;
+		pData[i * 12 +  8] = advance + gd.bearing.x;
+		pData[i * 12 +  9] = -gd.bearing.y;
+		pData[i * 12 + 10] = advance + gd.bearing.x + gd.size.x;
+		pData[i * 12 + 11] = -gd.bearing.y + gd.size.y;
+		advance += gd.advance;
+	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
@@ -161,16 +192,20 @@ bool CRenderString::Create(const CTextureFont& font)
 
 	glGenBuffers(1, &m_nTextureCoords);
 	glBindBuffer(GL_ARRAY_BUFFER, m_nTextureCoords);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, NULL, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 2 * m_nVertices, NULL, GL_STATIC_DRAW);
 
 	pData = reinterpret_cast<float*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
 	ATLASSERT(pData != nullptr);
-	pData[ 0] = 0; pData[ 1] = 0; // first line in data is bottom of texture
-	pData[ 2] = 0; pData[ 3] = 1; //   flip vertically through v' = 1-v
-	pData[ 4] = 1; pData[ 5] = 1;
-	pData[ 6] = 1; pData[ 7] = 0;
-	pData[ 8] = 0; pData[ 9] = 0;
-	pData[10] = 1; pData[11] = 1;
+	for (int i = 0; i < len; i++)
+	{
+		const glyph_desc& gd = font[std::min(txt[i], (wchar_t)255)];
+		pData[i * 12 +  0] = gd.tex0.s; pData[i * 12 +  1] = gd.tex0.t;
+		pData[i * 12 +  2] = gd.tex0.s; pData[i * 12 +  3] = gd.tex1.t;
+		pData[i * 12 +  4] = gd.tex1.s; pData[i * 12 +  5] = gd.tex1.t;
+		pData[i * 12 +  6] = gd.tex1.s; pData[i * 12 +  7] = gd.tex0.t;
+		pData[i * 12 +  8] = gd.tex0.s; pData[i * 12 +  9] = gd.tex0.t;
+		pData[i * 12 + 10] = gd.tex1.s; pData[i * 12 + 11] = gd.tex1.t;
+	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);

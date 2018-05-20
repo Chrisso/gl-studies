@@ -117,8 +117,13 @@ bool CScene::Create()
 		return false;
 	}
 
+	USES_CONVERSION;
+
 	m_pRenderString = new CRenderString();
-	if (!m_pRenderString->Create(*m_pTextureFont))
+	if (!m_pRenderString->CreateFormat(
+		*m_pTextureFont,
+		_T("OpenGL %s"),
+		(LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_VERSION)))))
 	{
 		ATLTRACE(_T("Error creating text rendering resources!\n"));
 		return false;
@@ -156,15 +161,17 @@ void CScene::Render(float time)
 
 	glUseProgram(*m_pFontShader);
 
+	glm::mat4 matText = glm::translate(m_matHudMVP, glm::vec3(10.0f, 64.0f, 0.0f));
+
 	glUniformMatrix4fv(
 		glGetUniformLocation(*m_pFontShader, "transformation"),
-		1, GL_FALSE, glm::value_ptr(m_matHudMVP)
+		1, GL_FALSE, glm::value_ptr(matText)
 	);
 
 	glDisable(GL_DEPTH_TEST);
 	glBindTexture(GL_TEXTURE_2D, *m_pTextureFont);
 	glBindVertexArray(*m_pRenderString);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glDrawArrays(GL_TRIANGLES, 0, m_pRenderString->NumVertices());
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glEnable(GL_DEPTH_TEST);
@@ -184,8 +191,4 @@ void CScene::Resize(int width, int height)
 	m_matSceneMVP = projection * modelview;
 
 	m_matHudMVP = glm::ortho(0.0f, (GLfloat)width, (GLfloat)height, 0.0f);
-	m_matHudMVP = glm::translate(
-		m_matHudMVP,
-		glm::vec3(10.0f, (height - m_pTextureFont->GetHeight()) / 2.0f, 0.0f)
-	);
 }

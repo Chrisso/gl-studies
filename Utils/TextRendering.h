@@ -5,8 +5,8 @@
 
 struct glyph_desc
 {
-	glm::ivec2 size;
-	glm::ivec2 bearing;
+	glm::vec2 size;
+	glm::vec2 bearing;
 	glm::vec2 tex0;
 	glm::vec2 tex1;
 	GLfloat advance;
@@ -32,6 +32,8 @@ public:
 	GLsizei GetWidth() const { return m_nWidth; }
 	GLsizei GetHeight() const { return m_nHeight;  }
 	GLsizei GetFontSize() const { return m_nFontSize; }
+
+	const glyph_desc& operator[](size_t n) const { return m_Glyphs[n]; }
 };
 
 class CRenderString
@@ -40,12 +42,15 @@ private:
 	GLuint m_nVertexArray = 0;
 	GLuint m_nVertexCoords = 0;
 	GLuint m_nTextureCoords = 0;
+	GLsizei m_nVertices;
 
 public:
 	CRenderString();
 	~CRenderString();
 
-	bool Create(const CTextureFont& font);
+	bool CreateFormat(const CTextureFont& font, LPCTSTR szFmt, ...);
+	bool Create(const CTextureFont& font, LPCTSTR szText);
 
 	operator GLuint() const { return m_nVertexArray; }
+	GLsizei NumVertices() const { return m_nVertices; }
 };
