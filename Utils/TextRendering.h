@@ -40,8 +40,7 @@ class CRenderString
 {
 private:
 	GLuint m_nVertexArray = 0;
-	GLuint m_nVertexCoords = 0;
-	GLuint m_nTextureCoords = 0;
+	GLuint m_nVertexAttribs = 0;
 	GLsizei m_nVertices = 0;
 	GLfloat m_fTextWidth = 0.0f;
 

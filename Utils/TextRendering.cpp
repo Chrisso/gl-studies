@@ -130,16 +130,10 @@ CRenderString::~CRenderString()
 		m_nVertexArray = 0;
 	}
 
-	if (m_nVertexCoords)
+	if (m_nVertexAttribs)
 	{
-		glDeleteBuffers(1, &m_nVertexCoords);
-		m_nVertexCoords = 0;
-	}
-
-	if (m_nTextureCoords)
-	{
-		glDeleteBuffers(1, &m_nTextureCoords);
-		m_nTextureCoords = 0;
+		glDeleteBuffers(1, &m_nVertexAttribs);
+		m_nVertexAttribs = 0;
 	}
 }
 
@@ -172,53 +166,64 @@ bool CRenderString::Create(const CTextureFont& font, LPCTSTR szText)
 	glGenVertexArrays(1, &m_nVertexArray);
 	glBindVertexArray(m_nVertexArray);
 
-	glGenBuffers(1, &m_nVertexCoords);
-	glBindBuffer(GL_ARRAY_BUFFER, m_nVertexCoords);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 2 * m_nVertices, NULL, GL_STATIC_DRAW);
+	glGenBuffers(1, &m_nVertexAttribs);
+	glBindBuffer(GL_ARRAY_BUFFER, m_nVertexAttribs);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 4 * m_nVertices, NULL, GL_STATIC_DRAW);
 
 	pData = reinterpret_cast<float*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
 	ATLASSERT(pData != nullptr);
 	for (int i = 0; i < len; i++)
 	{
 		const glyph_desc& gd = font[txt[i] > 255 ? 0 : txt[i]];
-		pData[i * 12 +  0] = m_fTextWidth + gd.bearing.x;
-		pData[i * 12 +  1] = -gd.bearing.y;
-		pData[i * 12 +  2] = m_fTextWidth + gd.bearing.x;
-		pData[i * 12 +  3] = -gd.bearing.y + gd.size.y;
-		pData[i * 12 +  4] = m_fTextWidth + gd.bearing.x + gd.size.x;
-		pData[i * 12 +  5] = -gd.bearing.y + gd.size.y;
-		pData[i * 12 +  6] = m_fTextWidth + gd.bearing.x + gd.size.x;
-		pData[i * 12 +  7] = -gd.bearing.y;
-		pData[i * 12 +  8] = m_fTextWidth + gd.bearing.x;
-		pData[i * 12 +  9] = -gd.bearing.y;
-		pData[i * 12 + 10] = m_fTextWidth + gd.bearing.x + gd.size.x;
-		pData[i * 12 + 11] = -gd.bearing.y + gd.size.y;
+
+		pData[i * 24 +  0] = m_fTextWidth + gd.bearing.x;
+		pData[i * 24 +  1] = -gd.bearing.y;
+		pData[i * 24 +  2] = gd.tex0.s;
+		pData[i * 24 +  3] = gd.tex0.t;
+
+		pData[i * 24 +  4] = m_fTextWidth + gd.bearing.x;
+		pData[i * 24 +  5] = -gd.bearing.y + gd.size.y;
+		pData[i * 24 +  6] = gd.tex0.s;
+		pData[i * 24 +  7] = gd.tex1.t;
+
+		pData[i * 24 +  8] = m_fTextWidth + gd.bearing.x + gd.size.x;
+		pData[i * 24 +  9] = -gd.bearing.y + gd.size.y;
+		pData[i * 24 + 10] = gd.tex1.s;
+		pData[i * 24 + 11] = gd.tex1.t;
+
+		pData[i * 24 + 12] = m_fTextWidth + gd.bearing.x + gd.size.x;
+		pData[i * 24 + 13] = -gd.bearing.y;
+		pData[i * 24 + 14] = gd.tex1.s;
+		pData[i * 24 + 15] = gd.tex0.t;
+
+		pData[i * 24 + 16] = m_fTextWidth + gd.bearing.x;
+		pData[i * 24 + 17] = -gd.bearing.y;
+		pData[i * 24 + 18] = gd.tex0.s;
+		pData[i * 24 + 19] = gd.tex0.t;
+
+		pData[i * 24 + 20] = m_fTextWidth + gd.bearing.x + gd.size.x;
+		pData[i * 24 + 21] = -gd.bearing.y + gd.size.y;
+		pData[i * 24 + 22] = gd.tex1.s;
+		pData[i * 24 + 23] = gd.tex1.t;
+
 		m_fTextWidth += gd.advance;
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	// layout (location=0) in vec2 vertex;
+	glVertexAttribPointer(
+		0, 2, GL_FLOAT, GL_FALSE,
+		4 * sizeof(GLfloat),
+		reinterpret_cast<void*>(0)
+	);
 	glEnableVertexAttribArray(0);
 
-	glGenBuffers(1, &m_nTextureCoords);
-	glBindBuffer(GL_ARRAY_BUFFER, m_nTextureCoords);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 2 * m_nVertices, NULL, GL_STATIC_DRAW);
-
-	pData = reinterpret_cast<float*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-	ATLASSERT(pData != nullptr);
-	for (int i = 0; i < len; i++)
-	{
-		const glyph_desc& gd = font[txt[i] > 255 ? 0 : txt[i]];
-		pData[i * 12 +  0] = gd.tex0.s; pData[i * 12 +  1] = gd.tex0.t;
-		pData[i * 12 +  2] = gd.tex0.s; pData[i * 12 +  3] = gd.tex1.t;
-		pData[i * 12 +  4] = gd.tex1.s; pData[i * 12 +  5] = gd.tex1.t;
-		pData[i * 12 +  6] = gd.tex1.s; pData[i * 12 +  7] = gd.tex0.t;
-		pData[i * 12 +  8] = gd.tex0.s; pData[i * 12 +  9] = gd.tex0.t;
-		pData[i * 12 + 10] = gd.tex1.s; pData[i * 12 + 11] = gd.tex1.t;
-	}
-	glUnmapBuffer(GL_ARRAY_BUFFER);
-
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	// layout(location = 1) in vec2 texcoords;
+	glVertexAttribPointer(
+		1, 2, GL_FLOAT, GL_FALSE,
+		4 * sizeof(GLfloat),
+		reinterpret_cast<void*>(2 * sizeof(GLfloat))
+	);
 	glEnableVertexAttribArray(1);
 
 	glBindVertexArray(0);
