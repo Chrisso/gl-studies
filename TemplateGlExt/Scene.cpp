@@ -111,7 +111,7 @@ bool CScene::Create()
 		return false;
 
 	m_pTextureFont = new CTextureFont();
-	if (!m_pTextureFont->Create(_Module.GetResourceInstance(), RT_FONT, IDR_FONT_OPENSANS))
+	if (!m_pTextureFont->Create(_Module.GetResourceInstance(), RT_FONT, IDR_FONT_OPENSANS, 12))
 	{
 		ATLTRACE(_T("Error initializing texture font!\n"));
 		return false;
@@ -161,7 +161,7 @@ void CScene::Render(float time)
 
 	glUseProgram(*m_pFontShader);
 
-	glm::mat4 matText = glm::translate(m_matHudMVP, glm::vec3(10.0f, 64.0f, 0.0f));
+	glm::mat4 matText = glm::translate(m_matHudMVP, glm::vec3(10.0f, 32.0f, 0.0f));
 
 	glUniformMatrix4fv(
 		glGetUniformLocation(*m_pFontShader, "transformation"),
