@@ -176,35 +176,25 @@ bool CRenderString::Create(const CTextureFont& font, LPCTSTR szText)
 	{
 		const glyph_desc& gd = font[txt[i] > 255 ? 0 : txt[i]];
 
-		pData[i * 24 +  0] = m_fTextWidth + gd.bearing.x;
-		pData[i * 24 +  1] = -gd.bearing.y;
-		pData[i * 24 +  2] = gd.tex0.s;
-		pData[i * 24 +  3] = gd.tex0.t;
+		pData[i * 24 +  0] = pData[i * 24 + 16] = m_fTextWidth + gd.bearing.x;
+		pData[i * 24 +  1] = pData[i * 24 + 17] = -gd.bearing.y;
+		pData[i * 24 +  2] = pData[i * 24 + 18] = gd.tex0.s;
+		pData[i * 24 +  3] = pData[i * 24 + 19] = gd.tex0.t;
 
 		pData[i * 24 +  4] = m_fTextWidth + gd.bearing.x;
 		pData[i * 24 +  5] = -gd.bearing.y + gd.size.y;
 		pData[i * 24 +  6] = gd.tex0.s;
 		pData[i * 24 +  7] = gd.tex1.t;
 
-		pData[i * 24 +  8] = m_fTextWidth + gd.bearing.x + gd.size.x;
-		pData[i * 24 +  9] = -gd.bearing.y + gd.size.y;
-		pData[i * 24 + 10] = gd.tex1.s;
-		pData[i * 24 + 11] = gd.tex1.t;
+		pData[i * 24 +  8] = pData[i * 24 + 20] = m_fTextWidth + gd.bearing.x + gd.size.x;
+		pData[i * 24 +  9] = pData[i * 24 + 21] = -gd.bearing.y + gd.size.y;
+		pData[i * 24 + 10] = pData[i * 24 + 22] = gd.tex1.s;
+		pData[i * 24 + 11] = pData[i * 24 + 23]=  gd.tex1.t;
 
 		pData[i * 24 + 12] = m_fTextWidth + gd.bearing.x + gd.size.x;
 		pData[i * 24 + 13] = -gd.bearing.y;
 		pData[i * 24 + 14] = gd.tex1.s;
 		pData[i * 24 + 15] = gd.tex0.t;
-
-		pData[i * 24 + 16] = m_fTextWidth + gd.bearing.x;
-		pData[i * 24 + 17] = -gd.bearing.y;
-		pData[i * 24 + 18] = gd.tex0.s;
-		pData[i * 24 + 19] = gd.tex0.t;
-
-		pData[i * 24 + 20] = m_fTextWidth + gd.bearing.x + gd.size.x;
-		pData[i * 24 + 21] = -gd.bearing.y + gd.size.y;
-		pData[i * 24 + 22] = gd.tex1.s;
-		pData[i * 24 + 23] = gd.tex1.t;
 
 		m_fTextWidth += gd.advance;
 	}
