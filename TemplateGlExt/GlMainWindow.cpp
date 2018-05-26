@@ -48,6 +48,12 @@ int CGlMainWindow::OnCreate(CREATESTRUCT *lpcs)
 		WS_EX_CLIENTEDGE
 	);
 
+	if (!m_hWndClient)
+	{
+		// no sense to run without a client
+		return -1;
+	}
+
 	m_FrameCounter.Subscribe([this](size_t fps) {
 		::PostMessage(this->m_hWnd, WM_APP_BENCHMARK, 0, (LPARAM)fps);
 	});
