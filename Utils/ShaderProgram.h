@@ -4,7 +4,7 @@ class CShader
 {
 private:
 	GLuint m_nShader = 0;
-	CString m_strLastError;
+	CString m_strInfoLog;
 
 protected:
 	static bool LoadSource(
@@ -19,7 +19,7 @@ public:
 
 	bool Create(GLenum nType, HINSTANCE hInst, PCTSTR szResType, int nResId);
 
-	LPCTSTR GetLastError() const { return m_strLastError; }
+	LPCTSTR GetInfoLog() const { return m_strInfoLog; }
 	operator GLuint() const { return m_nShader; }
 };
 
@@ -27,7 +27,7 @@ class CShaderProgram
 {
 private:
 	GLuint m_nShaderProgram = 0;
-	CString m_strLastError;
+	CString m_strInfoLog;
 
 public:
 	CShaderProgram();
@@ -45,6 +45,6 @@ public:
 		int nResVertexShader,
 		int nResFragmentShader);
 
-	LPCTSTR GetLastError() const { return m_strLastError; }
+	LPCTSTR GetInfoLog() const { return m_strInfoLog; }
 	operator GLuint() const { return m_nShaderProgram; }
 };

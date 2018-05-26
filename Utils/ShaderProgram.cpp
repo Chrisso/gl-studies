@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <vector>
 #include "ShaderProgram.h"
 
 /////////////////////////////////////////////////////////////////
@@ -74,12 +75,10 @@ bool CShader::Create(GLenum nType, HINSTANCE hInst, PCTSTR szResType, int nResId
 		glGetShaderiv(m_nShader, GL_INFO_LOG_LENGTH, &nStatus);
 		if (nStatus > 1)
 		{
-			USES_CONVERSION;
-			GLchar *pInfo = new GLchar[nStatus + 1];
-			glGetShaderInfoLog(m_nShader, nStatus + 1, NULL, pInfo);
-			m_strLastError = (LPCTSTR)CA2CT(pInfo);
-			ATLTRACE(_T("%s\n"), (LPCTSTR)m_strLastError);
-			delete[] pInfo;
+			std::vector<GLchar> info(nStatus + 1);
+			glGetShaderInfoLog(m_nShader, (GLsizei)info.size(), NULL, info.data());
+			m_strInfoLog = CString(info.data()).Trim();
+			ATLTRACE(_T("\n%s\n"), (LPCTSTR)m_strInfoLog);
 		}
 
 		glDeleteShader(m_nShader);
@@ -148,12 +147,10 @@ bool CShaderProgram::Link()
 
 		if (nStatus > 1)
 		{
-			USES_CONVERSION;
-			GLchar *pInfo = new GLchar[nStatus + 1];
-			glGetProgramInfoLog(m_nShaderProgram, nStatus + 1, NULL, pInfo);
-			m_strLastError = (LPCTSTR)CA2CT(pInfo);
-			ATLTRACE(_T("%s\n"), (LPCTSTR)m_strLastError);
-			delete[] pInfo;
+			std::vector<GLchar> info(nStatus + 1);
+			glGetShaderInfoLog(m_nShaderProgram, (GLsizei)info.size(), NULL, info.data());
+			m_strInfoLog = CString(info.data()).Trim();
+			ATLTRACE(_T("\n%s\n"), (LPCTSTR)m_strInfoLog);
 		}
 	}
 
@@ -174,14 +171,14 @@ bool CShaderProgram::CreateSimple(HINSTANCE hInst, LPCTSTR szResType, int nResVe
 	CShader vertexShader;
 	if (!vertexShader.Create(GL_VERTEX_SHADER, hInst, szResType, nResVertexShader))
 	{
-		m_strLastError = vertexShader.GetLastError();
+		m_strInfoLog = vertexShader.GetInfoLog();
 		return false;
 	}
 
 	CShader fragmentShader;
 	if (!fragmentShader.Create(GL_FRAGMENT_SHADER, hInst, szResType, nResFragmentShader))
 	{
-		m_strLastError = fragmentShader.GetLastError();
+		m_strInfoLog = fragmentShader.GetInfoLog();
 		return false;
 	}
 
