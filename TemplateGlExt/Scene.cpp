@@ -94,7 +94,7 @@ bool CScene::Create()
 	glBindVertexArray(0);
 
 	m_pShaderProgram = new CShaderProgram();
-	if (!m_pShaderProgram->Create(
+	if (!m_pShaderProgram->CreateSimple(
 		_Module.GetResourceInstance(), _T("GLSL_SHADER"),
 		IDR_GLSL_VERTEX_SHADER,
 		IDR_GLSL_FRAGMENT_SHADER))
@@ -104,7 +104,7 @@ bool CScene::Create()
 	}
 
 	m_pFontShader = new CShaderProgram();
-	if (!m_pFontShader->Create(
+	if (!m_pFontShader->CreateSimple(
 		_Module.GetResourceInstance(), _T("GLSL_SHADER"),
 		IDR_GLSL_TEXTVERTEX_SHADER,
 		IDR_GLSL_TEXTFRAGMENT_SHADER))

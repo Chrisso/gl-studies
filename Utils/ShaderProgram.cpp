@@ -1,34 +1,28 @@
 #include "stdafx.h"
-#include <initializer_list>
 #include "ShaderProgram.h"
 
 /////////////////////////////////////////////////////////////////
-// Construction/ Destruction
+// CShader Construction/ Destruction
 /////////////////////////////////////////////////////////////////
 
-CShaderProgram::CShaderProgram()
+CShader::CShader()
 {
 }
 
-CShaderProgram::~CShaderProgram()
+CShader::~CShader()
 {
-	Destroy();
-}
-
-/////////////////////////////////////////////////////////////////
-// Method Implementation
-/////////////////////////////////////////////////////////////////
-
-void CShaderProgram::Destroy()
-{
-	if (m_nShaderProgram)
+	if (m_nShader)
 	{
-		glDeleteProgram(m_nShaderProgram);
-		m_nShaderProgram = 0;
+		glDeleteShader(m_nShader);
+		m_nShader = 0;
 	}
 }
 
-bool CShaderProgram::LoadShaderSource(HINSTANCE hInst, LPCTSTR szResType, int nResId, CStringA& shader)
+/////////////////////////////////////////////////////////////////
+// CShader Method Implementation
+/////////////////////////////////////////////////////////////////
+
+bool CShader::LoadSource(HINSTANCE hInst, LPCTSTR szResType, int nResId, CStringA& shader)
 {
 	HRSRC hResInfo = ::FindResource(hInst, MAKEINTRESOURCE(nResId), szResType);
 	if (hResInfo)
@@ -50,82 +44,158 @@ bool CShaderProgram::LoadShaderSource(HINSTANCE hInst, LPCTSTR szResType, int nR
 	return false;
 }
 
-bool CShaderProgram::Create(HINSTANCE hInst, LPCTSTR szResType, int nResVertexShader, int nResFragmentShader)
+bool CShader::Create(GLenum nType, HINSTANCE hInst, PCTSTR szResType, int nResId)
 {
-	CStringA vertexShaderSource, fragmentShaderSource;
-	if (LoadShaderSource(hInst, szResType, nResVertexShader, vertexShaderSource) &&
-		LoadShaderSource(hInst, szResType, nResFragmentShader, fragmentShaderSource))
+	CStringA strSource;
+	if (!LoadSource(hInst, szResType, nResId, strSource))
 	{
-		const GLchar *pSource = vertexShaderSource.GetString();
-		GLuint nVS = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(nVS, 1, &pSource, NULL);
-		glCompileShader(nVS);
-
-		pSource = fragmentShaderSource.GetString();
-		GLuint nFS = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(nFS, 1, &pSource, NULL);
-		glCompileShader(nFS);
-
-		GLint statusVS = GL_FALSE;
-		glGetShaderiv(nVS, GL_COMPILE_STATUS, &statusVS);
-
-		GLint statusFS = GL_FALSE;
-		glGetShaderiv(nFS, GL_COMPILE_STATUS, &statusFS);
-
-		if (statusVS == GL_TRUE && statusFS == GL_TRUE)
-		{
-			m_nShaderProgram = glCreateProgram();
-			glAttachShader(m_nShaderProgram, nVS);
-			glAttachShader(m_nShaderProgram, nFS);
-			glLinkProgram(m_nShaderProgram);
-
-			GLint status = GL_FALSE;
-			glGetProgramiv(m_nShaderProgram, GL_LINK_STATUS, &status);
-			if (status != GL_TRUE)
-			{
-				ATLTRACE(_T("Error linking shader program!\n"));
-				glGetProgramiv(m_nShaderProgram, GL_INFO_LOG_LENGTH, &status);
-
-				if (status > 1)
-				{
-					USES_CONVERSION;
-					GLchar *pInfo = new GLchar[status + 1];
-					glGetProgramInfoLog(m_nShaderProgram, status + 1, NULL, pInfo);
-					m_strLastError = (LPCTSTR)CA2CT(pInfo);
-					ATLTRACE(_T("%s\n"), (LPCTSTR)m_strLastError);
-					delete[] pInfo;
-				}
-
-				glDeleteProgram(m_nShaderProgram);
-				m_nShaderProgram = 0;
-			}
-
-			glDetachShader(m_nShaderProgram, nFS);
-			glDetachShader(m_nShaderProgram, nVS);
-		}
-		else
-		{
-			ATLTRACE(_T("Eror compiling shaders!\n"));
-
-			for (GLuint shader : {nVS, nFS})
-			{
-				GLint status = 0;
-				glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &status);
-				if (status > 1)
-				{
-					USES_CONVERSION;
-					GLchar *pInfo = new GLchar[status + 1];
-					glGetShaderInfoLog(shader, status + 1, NULL, pInfo);
-					m_strLastError = (LPCTSTR)CA2CT(pInfo);
-					ATLTRACE(_T("%s\n"), (LPCTSTR)m_strLastError);
-					delete[] pInfo;
-				}
-			}
-		}
-
-		if (nVS) glDeleteShader(nVS);
-		if (nFS) glDeleteShader(nFS);
+		ATLTRACE(_T("Error loader shader source from resources (%d)!\n"), nResId);
+		return false;
 	}
 
-	return m_nShaderProgram != 0;
+	m_nShader = glCreateShader(nType);
+	if (m_nShader == 0)
+	{
+		ATLTRACE(_T("Error creating shader!\n"));
+		return false;
+	}
+
+	const GLchar *pSource = strSource.GetString();
+	glShaderSource(m_nShader, 1, &pSource, NULL);
+	glCompileShader(m_nShader);
+
+	GLint nStatus = GL_FALSE;
+	glGetShaderiv(m_nShader, GL_COMPILE_STATUS, &nStatus);
+
+	if (nStatus == GL_FALSE)
+	{
+		ATLTRACE(_T("Error compiling shader (%d)!\n"), nResId);
+
+		glGetShaderiv(m_nShader, GL_INFO_LOG_LENGTH, &nStatus);
+		if (nStatus > 1)
+		{
+			USES_CONVERSION;
+			GLchar *pInfo = new GLchar[nStatus + 1];
+			glGetShaderInfoLog(m_nShader, nStatus + 1, NULL, pInfo);
+			m_strLastError = (LPCTSTR)CA2CT(pInfo);
+			ATLTRACE(_T("%s\n"), (LPCTSTR)m_strLastError);
+			delete[] pInfo;
+		}
+
+		glDeleteShader(m_nShader);
+		m_nShader = 0;
+	}
+
+	return m_nShader != 0;
+}
+
+/////////////////////////////////////////////////////////////////
+// CShaderProgram Construction/ Destruction
+/////////////////////////////////////////////////////////////////
+
+CShaderProgram::CShaderProgram()
+{
+}
+
+CShaderProgram::~CShaderProgram()
+{
+	Destroy();
+}
+
+/////////////////////////////////////////////////////////////////
+// CShaderProgram Method Implementation
+/////////////////////////////////////////////////////////////////
+
+bool CShaderProgram::Create()
+{
+	m_nShaderProgram = glCreateProgram();
+
+	if (m_nShaderProgram == 0)
+	{
+		ATLTRACE(_T("Error creating shader program!\n"));
+		return false;
+	}
+
+	return true;
+}
+
+void CShaderProgram::Attach(GLuint nShader)
+{
+	ATLASSERT(nShader != 0);
+	ATLASSERT(m_nShaderProgram != 0);
+	glAttachShader(m_nShaderProgram, nShader);
+}
+
+void CShaderProgram::Detach(GLuint nShader)
+{
+	ATLASSERT(nShader != 0);
+	ATLASSERT(m_nShaderProgram != 0);
+	glDetachShader(m_nShaderProgram, nShader);
+}
+
+bool CShaderProgram::Link()
+{
+	ATLASSERT(m_nShaderProgram != 0);
+	glLinkProgram(m_nShaderProgram);
+
+	GLint nStatus = GL_FALSE;
+	glGetProgramiv(m_nShaderProgram, GL_LINK_STATUS, &nStatus);
+
+	if (nStatus == GL_FALSE)
+	{
+		ATLTRACE(_T("Error linking shader program!\n"));
+		glGetProgramiv(m_nShaderProgram, GL_INFO_LOG_LENGTH, &nStatus);
+
+		if (nStatus > 1)
+		{
+			USES_CONVERSION;
+			GLchar *pInfo = new GLchar[nStatus + 1];
+			glGetProgramInfoLog(m_nShaderProgram, nStatus + 1, NULL, pInfo);
+			m_strLastError = (LPCTSTR)CA2CT(pInfo);
+			ATLTRACE(_T("%s\n"), (LPCTSTR)m_strLastError);
+			delete[] pInfo;
+		}
+	}
+
+	return nStatus == GL_TRUE;
+}
+
+void CShaderProgram::Destroy()
+{
+	if (m_nShaderProgram)
+	{
+		glDeleteProgram(m_nShaderProgram);
+		m_nShaderProgram = 0;
+	}
+}
+
+bool CShaderProgram::CreateSimple(HINSTANCE hInst, LPCTSTR szResType, int nResVertexShader, int nResFragmentShader)
+{
+	CShader vertexShader;
+	if (!vertexShader.Create(GL_VERTEX_SHADER, hInst, szResType, nResVertexShader))
+	{
+		m_strLastError = vertexShader.GetLastError();
+		return false;
+	}
+
+	CShader fragmentShader;
+	if (!fragmentShader.Create(GL_FRAGMENT_SHADER, hInst, szResType, nResFragmentShader))
+	{
+		m_strLastError = fragmentShader.GetLastError();
+		return false;
+	}
+
+	if (!Create()) return false;
+
+	Attach(vertexShader);
+	Attach(fragmentShader);
+
+	bool bResult = Link();
+
+	Detach(fragmentShader);
+	Detach(vertexShader);
+
+	if (!bResult) Destroy(); // just to be sure
+
+	return bResult;
 }
