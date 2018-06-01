@@ -12,7 +12,7 @@
 class CGlMainWindow : public CFrameWindowImpl<CGlMainWindow>
 {
 private:
-	CFrameCounter m_FrameCounter;
+	CGlFrameCounter m_FrameCounter;
 	CCommandBarCtrl m_CmdBar;
 	CMultiPaneStatusBarCtrl m_StatusBar;
 	CGlView m_View;

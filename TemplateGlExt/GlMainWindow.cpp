@@ -54,6 +54,12 @@ int CGlMainWindow::OnCreate(CREATESTRUCT *lpcs)
 		return -1;
 	}
 
+	if (!m_FrameCounter.Create())
+	{
+		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
+		return -1;
+	}
+
 	m_FrameCounter.Subscribe([this](size_t fps) {
 		::PostMessage(this->m_hWnd, WM_APP_BENCHMARK, 0, (LPARAM)fps);
 	});
