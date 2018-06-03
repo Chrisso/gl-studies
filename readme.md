@@ -11,6 +11,7 @@
 
 ## Projects
 
+* `NuklearGl`: Immediate mode UI based on Nuklear with custom OpenGL backend
 * `TemplateGlExt`: OpenGL 4.0 (core profile) Windows application stub
 * `Utils`: Common stuff and helpers library (OpenGL 3.3+)
 
