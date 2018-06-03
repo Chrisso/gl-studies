@@ -166,29 +166,31 @@ void CScene::Render(float time)
 {
 	// specification
 
-	if (!nk_begin(&m_nkContext, "Show", nk_rect(50, 50, 220, 220),
-		NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_CLOSABLE))
+	if (!nk_begin(&m_nkContext, "Show",
+		nk_rect(m_vecSize.x / 2.0f - 110.0f, m_vecSize.y / 2.0f - 110.0f, 220.0f, 220.0f),
+		NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_TITLE))
 	{
 		ATLTRACE(_T("Could not configure Nuklear UI!\n"));
 		return;
 	}
 
 	// fixed widget pixel width
-	nk_layout_row_static(&m_nkContext, 30, 80, 1);
-	if (nk_button_label(&m_nkContext, "Button")) { /* event handling */ }
+	nk_layout_row_static(&m_nkContext, 30.0f, 80, 1);
+	if (nk_button_label(&m_nkContext, "Button")) { ATLTRACE(_T("Button pressed.\n")); }
 
 	// fixed widget window ratio width
-	nk_layout_row_dynamic(&m_nkContext, 30, 2);
-	if (nk_option_label(&m_nkContext, "easy", true)) { /* event handling */ }
-	if (nk_option_label(&m_nkContext, "hard", false)) { /* event handling */ }
+	static bool easy = true;
+	nk_layout_row_dynamic(&m_nkContext, 30.0f, 2);
+	if (nk_option_label(&m_nkContext, "easy", easy)) { easy = true; }
+	if (nk_option_label(&m_nkContext, "hard", !easy)) { easy = false; }
 
 	// custom widget pixel width
-	nk_layout_row_begin(&m_nkContext, NK_STATIC, 30, 2);
+	nk_layout_row_begin(&m_nkContext, NK_STATIC, 30.0f, 2);
 	{
 		static float value = 0.6f;
-		nk_layout_row_push(&m_nkContext, 50);
+		nk_layout_row_push(&m_nkContext, 50.0f);
 		nk_label(&m_nkContext, "Volume:", NK_TEXT_LEFT);
-		nk_layout_row_push(&m_nkContext, 110);
+		nk_layout_row_push(&m_nkContext, 110.0f);
 		nk_slider_float(&m_nkContext, 0, &value, 1.0f, 0.1f);
 	}
 	nk_layout_row_end(&m_nkContext);

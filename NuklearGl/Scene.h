@@ -28,4 +28,27 @@ public:
 	bool Create();
 	void Render(float time);
 	void Resize(int width, int height);
+
+	void MouseMove(unsigned int flags, int x, int y)
+	{
+		nk_input_begin(&m_nkContext);
+		nk_input_motion(&m_nkContext, x, y);
+		nk_input_end(&m_nkContext);
+	}
+
+	void MouseButton(unsigned int button, bool pressed, int x, int y)
+	{
+		nk_buttons btn = NK_BUTTON_LEFT;
+
+		switch (btn)
+		{
+		case MK_LBUTTON: btn = NK_BUTTON_LEFT; break;
+		case MK_RBUTTON: btn = NK_BUTTON_RIGHT; break;
+		case MK_MBUTTON: btn = NK_BUTTON_MIDDLE; break;
+		}
+
+		nk_input_begin(&m_nkContext);
+		nk_input_button(&m_nkContext, btn, x, y, pressed ? 1 : 0);
+		nk_input_end(&m_nkContext);
+	}
 };
