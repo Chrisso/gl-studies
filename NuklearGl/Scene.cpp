@@ -192,6 +192,16 @@ void CScene::Render(float time)
 		nk_label(&m_nkContext, "Volume:", NK_TEXT_LEFT);
 		nk_layout_row_push(&m_nkContext, 110.0f);
 		nk_slider_float(&m_nkContext, 0, &value, 1.0f, 0.1f);
+
+		static char textBuffer[128] = { 0 };
+		nk_layout_row_push(&m_nkContext, 50.0f);
+		nk_label(&m_nkContext, "Name:", NK_TEXT_LEFT);
+		nk_layout_row_push(&m_nkContext, 110.0f);
+		nk_edit_string_zero_terminated(
+			&m_nkContext, NK_EDIT_BOX,
+			textBuffer, sizeof(textBuffer),
+			nk_filter_ascii
+		);
 	}
 	nk_layout_row_end(&m_nkContext);
 

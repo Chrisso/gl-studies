@@ -34,6 +34,21 @@ public:
 		if (m_pScene) m_pScene->MouseButton(MK_LBUTTON, false, (int)point.x, (int)point.y);
 	}
 
+	void OnChar(TCHAR chChar, UINT nRepCnt, UINT nFlags)
+	{
+		if (m_pScene) m_pScene->Char((char)chChar, nFlags);
+	}
+
+	void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+	{
+		if (m_pScene) m_pScene->Key(nChar, nFlags, true);
+	}
+
+	void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
+	{
+		if (m_pScene) m_pScene->Key(nChar, nFlags, false);
+	}
+
 	BOOL PreTranslateMessage(MSG*)
 	{
 		return FALSE;
@@ -49,5 +64,8 @@ public:
 		MSG_WM_MOUSEMOVE(OnMouseMove);
 		MSG_WM_LBUTTONDOWN(OnLButtonDown);
 		MSG_WM_LBUTTONUP(OnLButtonUp);
+		MSG_WM_CHAR(OnChar);
+		MSG_WM_KEYDOWN(OnKeyDown);
+		MSG_WM_KEYUP(OnKeyUp);
 	END_MSG_MAP()
 };
