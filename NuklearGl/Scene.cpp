@@ -49,6 +49,7 @@ CScene::~CScene()
 		m_nFontTexture = 0;
 	}
 
+	nk_input_end(&m_nkContext); // end input tracking
 	nk_buffer_free(&m_nkCommands);
 	nk_free(&m_nkContext);
 	nk_font_atlas_clear(&m_nkFontAtlas);
@@ -159,11 +160,15 @@ bool CScene::Create()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
+	nk_input_begin(&m_nkContext); // start input tracking
+
 	return true;
 }
 
 void CScene::Render(float time)
 {
+	nk_input_end(&m_nkContext); // pause input tracking
+
 	// specification
 
 	if (!nk_begin(&m_nkContext, "Show",
@@ -266,6 +271,8 @@ void CScene::Render(float time)
 	glEnable(GL_CULL_FACE);
 
 	nk_clear(&m_nkContext);
+
+	nk_input_begin(&m_nkContext); // resume input tracking
 }
 
 void CScene::Resize(int width, int height)

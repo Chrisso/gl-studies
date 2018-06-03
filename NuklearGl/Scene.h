@@ -31,9 +31,7 @@ public:
 
 	void MouseMove(unsigned int flags, int x, int y)
 	{
-		nk_input_begin(&m_nkContext);
 		nk_input_motion(&m_nkContext, x, y);
-		nk_input_end(&m_nkContext);
 	}
 
 	void MouseButton(unsigned int button, bool pressed, int x, int y)
@@ -47,19 +45,13 @@ public:
 		case MK_MBUTTON: btn = NK_BUTTON_MIDDLE; break;
 		}
 
-		nk_input_begin(&m_nkContext);
 		nk_input_button(&m_nkContext, btn, x, y, pressed ? 1 : 0);
-		nk_input_end(&m_nkContext);
 	}
 
 	void Char(char c, unsigned int flags)
 	{
 		if (c >= 32)
-		{
-			nk_input_begin(&m_nkContext);
 			nk_input_char(&m_nkContext, c);
-			nk_input_end(&m_nkContext);
-		}
 	}
 
 	void Key(char key, unsigned int flags, bool pressed)
@@ -78,10 +70,6 @@ public:
 		}
 
 		if (keys != NK_KEY_NONE)
-		{
-			nk_input_begin(&m_nkContext);
 			nk_input_key(&m_nkContext, keys, pressed ? 1 : 0);
-			nk_input_end(&m_nkContext);
-		}
 	}
 };
