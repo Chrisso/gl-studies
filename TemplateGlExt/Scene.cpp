@@ -99,7 +99,7 @@ bool CScene::Create()
 		IDR_GLSL_VERTEX_SHADER,
 		IDR_GLSL_FRAGMENT_SHADER))
 	{
-		// trigger immediate window destroy and thus cascading destructor
+		// trigger immediate window destruction and thus cascading destructor
 		return false;
 	}
 
