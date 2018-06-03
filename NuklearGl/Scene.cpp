@@ -254,7 +254,7 @@ void CScene::Render(float time)
 		glBindTexture(GL_TEXTURE_2D, (GLuint)cmd->texture.id);
 		glScissor(
 			(GLint)(cmd->clip_rect.x),
-			(GLint)((m_vecSize.y - (GLint)(cmd->clip_rect.y + cmd->clip_rect.h))),
+			(GLint)(m_vecSize.y - (cmd->clip_rect.y + cmd->clip_rect.h)),
 			(GLint)(cmd->clip_rect.w),
 			(GLint)(cmd->clip_rect.h));
 		glDrawElements(GL_TRIANGLES, (GLsizei)cmd->elem_count, GL_UNSIGNED_SHORT, offset);
