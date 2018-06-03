@@ -63,17 +63,19 @@
     <Image Include="small.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="NuklearGl.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="resources\icon1.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="Resources\NuklearGl.ico">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="Resources\small.ico">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\nkFragments.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\nkVertices.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

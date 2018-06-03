@@ -6,6 +6,7 @@
 * [Freetype](https://www.freetype.org/)
 * [GLEW](https://github.com/nigels-com/glew/)
 * [GLM](https://github.com/g-truc/glm/)
+* [Nuklear](https://github.com/vurtun/nuklear)
 * [WTL](https://sourceforge.net/projects/wtl/)
 
 ## Projects

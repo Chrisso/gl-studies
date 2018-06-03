@@ -24,6 +24,17 @@
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// GLSL_SHADER
+//
+
+IDR_GLSL_NK_VERTEX_SHADER GLSL_SHADER             "Resources\\nkVertices.glsl"
+
+IDR_GLSL_NK_FRAGMENT_SHADER GLSL_SHADER             "Resources\\nkFragments.glsl"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
