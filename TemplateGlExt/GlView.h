@@ -19,6 +19,10 @@ public:
 	int OnDestroy();
 	int OnSize(UINT nType, CSize size);
 
+	void OnDebugMessage(
+		GLenum source, GLenum type, GLuint id,
+		GLenum severity, LPCTSTR szMsg) const;
+
 	BOOL PreTranslateMessage(MSG*)
 	{
 		return FALSE;

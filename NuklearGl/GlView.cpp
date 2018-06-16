@@ -18,6 +18,24 @@ CGlView::~CGlView()
 // Method Implementation/ Windows Message Handling
 /////////////////////////////////////////////////////////////////
 
+namespace detail
+{
+	static void APIENTRY GlDebugProc(
+		GLenum source,
+		GLenum type,
+		GLuint id,
+		GLenum severity,
+		GLsizei length,
+		const GLchar *message,
+		const void *userParam)
+	{
+		USES_CONVERSION;
+		reinterpret_cast<const CGlView*>(userParam)->OnDebugMessage(
+			source, type, id, severity, CA2CT(message)
+		);
+	}
+}
+
 int CGlView::OnCreate(CREATESTRUCT *lpcs)
 {
 	ATLTRACE(_T("OnCreate\n"));
@@ -60,10 +78,18 @@ int CGlView::OnCreate(CREATESTRUCT *lpcs)
 		return -1;
 	}
 
+	int nDebug = 0;
+#ifdef _DEBUG
+	if (GLEW_ARB_debug_output) // don't need this check if assuming OpenGL 4.3+
+	{
+		nDebug = WGL_CONTEXT_DEBUG_BIT_ARB;
+	}
+#endif // _DEBUG
+
 	int nContextAttributes[] = {
 		WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
 		WGL_CONTEXT_MINOR_VERSION_ARB, 0,
-		WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+		WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB | nDebug,
 		WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
 		0
 	};
@@ -74,6 +100,18 @@ int CGlView::OnCreate(CREATESTRUCT *lpcs)
 		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
 		return -1;
 	}
+
+#ifdef _DEBUG
+	if (nDebug)
+	{
+		glDebugMessageCallback(detail::GlDebugProc, this);
+		glDebugMessageInsert(
+			GL_DEBUG_SOURCE_APPLICATION,
+			GL_DEBUG_TYPE_PERFORMANCE, 0,
+			GL_DEBUG_SEVERITY_NOTIFICATION,
+			-1, "Using OpenGL debug context.");
+	}
+#endif // _DEBUG
 
 	m_pScene = new CScene();
 	if (!m_pScene->Create())
@@ -138,4 +176,47 @@ void CGlView::Render(float time)
 	}
 
 	::SwapBuffers(m_hDC);
+}
+
+void CGlView::OnDebugMessage(GLenum source, GLenum type, GLuint id, GLenum severity, LPCTSTR szMsg) const
+{
+	CString msg;
+
+	switch (source)
+	{
+	case GL_DEBUG_SOURCE_API: msg.Append(_T("[API]")); break;
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM: msg.Append(_T("[Win]")); break;
+	case GL_DEBUG_SOURCE_SHADER_COMPILER: msg.Append(_T("[Compiler]")); break;
+	case GL_DEBUG_SOURCE_THIRD_PARTY: msg.Append(_T("[3rd-party]")); break;
+	case GL_DEBUG_SOURCE_APPLICATION: msg.Append(_T("[App]")); break;
+	default: msg.Append(_T("[Other]"));
+	}
+
+	msg.Append(_T(" "));
+
+	switch (severity)
+	{
+	case GL_DEBUG_SEVERITY_HIGH: msg.Append(_T("HIGH")); break;
+	case GL_DEBUG_SEVERITY_MEDIUM: msg.Append(_T("MEDIUM")); break;
+	case GL_DEBUG_SEVERITY_LOW: msg.Append(_T("LOW")); break;
+	case GL_DEBUG_SEVERITY_NOTIFICATION: msg.Append(_T("NOTE")); break;
+	}
+
+	msg.Append(_T(" "));
+
+	switch (type)
+	{
+	case GL_DEBUG_TYPE_ERROR: msg.Append(_T("Error")); break;
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: msg.Append(_T("Deprecated")); break;
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: msg.Append(_T("Undef")); break;
+	case GL_DEBUG_TYPE_PORTABILITY: msg.Append(_T("Portability")); break;
+	case GL_DEBUG_TYPE_PERFORMANCE: msg.Append(_T("Performance")); break;
+	case GL_DEBUG_TYPE_MARKER: msg.Append(_T("Marker")); break;
+	case GL_DEBUG_TYPE_PUSH_GROUP: msg.Append(_T("Push group")); break;
+	case GL_DEBUG_TYPE_POP_GROUP: msg.Append(_T("Pop group")); break;
+	default: msg.Append(_T("Other"));
+	}
+
+	msg.AppendFormat(_T(": %s\n"), szMsg);
+	ATLTRACE((LPCTSTR)msg);
 }

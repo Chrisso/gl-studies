@@ -19,6 +19,10 @@ public:
 	int OnDestroy();
 	int OnSize(UINT nType, CSize size);
 
+	void OnDebugMessage(
+		GLenum source, GLenum type, GLuint id,
+		GLenum severity, LPCTSTR szMsg) const;
+
 	void OnMouseMove(UINT nFlags, CPoint point)
 	{
 		if (m_pScene) m_pScene->MouseMove(nFlags, (int)point.x, (int)point.y);
