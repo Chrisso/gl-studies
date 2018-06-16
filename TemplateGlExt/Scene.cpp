@@ -17,8 +17,6 @@ CScene::CScene()
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 }
 
 CScene::~CScene()

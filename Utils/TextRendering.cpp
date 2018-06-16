@@ -85,7 +85,8 @@ bool CTextureFont::Create(HINSTANCE hInst, LPCTSTR szResType, int nResId, int nS
 		for (int y = 0; y < 16; y++)
 		{
 			wchar_t character = y * 16 + x;
-			if (FT_Load_Char(pFace, character, FT_LOAD_RENDER) == FT_Err_Ok)
+			if (FT_Load_Char(pFace, character, FT_LOAD_RENDER) == FT_Err_Ok &&
+				pFace->glyph->bitmap.buffer != nullptr)
 			{
 				glTexSubImage2D(
 					GL_TEXTURE_2D, 0,
