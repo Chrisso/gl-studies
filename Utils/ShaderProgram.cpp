@@ -196,3 +196,77 @@ bool CShaderProgram::CreateSimple(HINSTANCE hInst, LPCTSTR szResType, int nResVe
 
 	return bResult;
 }
+
+bool CShaderProgram::Load(LPCTSTR szFile, bool bDeleteOnError)
+{
+	if (!GLEW_ARB_get_program_binary) // don't need this check if assuming OpenGL 4.1+
+		return false;
+
+	HANDLE hFile = ::CreateFile(szFile,
+		GENERIC_READ, FILE_SHARE_READ, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if (hFile == INVALID_HANDLE_VALUE)
+		return false;
+
+	LARGE_INTEGER nSize;
+	if (::GetFileSizeEx(hFile, &nSize) && nSize.QuadPart > sizeof(GLenum))
+	{
+		DWORD dwBytesRead = 0;
+		GLenum nFormat;
+		if (::ReadFile(hFile, &nFormat, sizeof(GLenum), &dwBytesRead, NULL) &&
+			dwBytesRead == sizeof(GLenum))
+		{
+			std::vector<GLbyte> pData(nSize.QuadPart - sizeof(GLenum));
+			if (::ReadFile(hFile, pData.data(), (DWORD)pData.size(), &dwBytesRead, NULL) &&
+				dwBytesRead == pData.size())
+			{
+				GLint nStatus = GL_FALSE;
+				m_nShaderProgram = glCreateProgram();
+
+				glProgramBinary(m_nShaderProgram, nFormat, pData.data(), (GLsizei)pData.size());			
+				glGetProgramiv(m_nShaderProgram, GL_LINK_STATUS, &nStatus);
+				if (nStatus == GL_FALSE)
+				{
+					glDeleteProgram(m_nShaderProgram);
+					m_nShaderProgram = 0;
+				}
+			}
+		}
+	}
+
+	::CloseHandle(hFile);
+
+	if (m_nShaderProgram == 0 && bDeleteOnError)
+		::DeleteFile(szFile);
+
+	return m_nShaderProgram != 0;
+}
+
+bool CShaderProgram::Store(LPCTSTR szFile) const
+{
+	if (!GLEW_ARB_get_program_binary) // don't need this check if assuming OpenGL 4.1+
+		return false;
+
+	GLint nSize = 0;
+	glGetProgramiv(m_nShaderProgram, GL_PROGRAM_BINARY_LENGTH, &nSize);
+
+	if (nSize == 0) return false;
+
+	GLenum nFormat = GL_NONE;
+	std::vector<GLbyte> pData(nSize);
+	glGetProgramBinary(m_nShaderProgram, nSize, NULL, &nFormat, pData.data());
+
+	HANDLE hFile = ::CreateFile(szFile,
+		GENERIC_WRITE, 0, NULL,
+		CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if (hFile == INVALID_HANDLE_VALUE)
+		return false;
+
+	DWORD dwBytesWritten = 0;
+	::WriteFile(hFile, &nFormat, sizeof(GLenum), &dwBytesWritten, NULL);
+	::WriteFile(hFile, pData.data(), nSize, &dwBytesWritten, NULL);
+	::CloseHandle(hFile);
+	return true;
+}

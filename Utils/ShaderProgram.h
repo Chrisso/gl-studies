@@ -39,6 +39,9 @@ public:
 	bool Link();
 	void Destroy();
 
+	bool Load(LPCTSTR szFile, bool bDeleteOnError = true);
+	bool Store(LPCTSTR szFile) const;
+
 	bool CreateSimple(
 		HINSTANCE hInst,
 		LPCTSTR szResType,

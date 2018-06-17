@@ -49,12 +49,24 @@ CScene::~CScene()
 
 	if (m_pFontShader)
 	{
+		if (!::PathFileExists(_T("font.shader")))
+		{
+			ATLTRACE(_T("Saving compiled font shader to file.\n"));
+			m_pFontShader->Store(_T("font.shader"));
+		}
+
 		delete m_pFontShader;
 		m_pFontShader = nullptr;
 	}
 
 	if (m_pShaderProgram)
 	{
+		if (!::PathFileExists(_T("default.shader")))
+		{
+			ATLTRACE(_T("Saving compiled default shader to file.\n"));
+			m_pShaderProgram->Store(_T("default.shader"));
+		}
+
 		delete m_pShaderProgram;
 		m_pShaderProgram = nullptr;
 	}
@@ -92,21 +104,29 @@ bool CScene::Create()
 	glBindVertexArray(0);
 
 	m_pShaderProgram = new CShaderProgram();
-	if (!m_pShaderProgram->CreateSimple(
-		_Module.GetResourceInstance(), _T("GLSL_SHADER"),
-		IDR_GLSL_VERTEX_SHADER,
-		IDR_GLSL_FRAGMENT_SHADER))
+	if (!m_pShaderProgram->Load(_T("default.shader")))
 	{
-		// trigger immediate window destruction and thus cascading destructor
-		return false;
+		ATLTRACE(_T("Could not restore compiled default shader. Recompiling...\n"));
+		if (!m_pShaderProgram->CreateSimple(
+			_Module.GetResourceInstance(), _T("GLSL_SHADER"),
+			IDR_GLSL_VERTEX_SHADER,
+			IDR_GLSL_FRAGMENT_SHADER))
+		{
+			// trigger immediate window destruction and thus cascading destructor
+			return false;
+		}
 	}
 
 	m_pFontShader = new CShaderProgram();
-	if (!m_pFontShader->CreateSimple(
-		_Module.GetResourceInstance(), _T("GLSL_SHADER"),
-		IDR_GLSL_TEXTVERTEX_SHADER,
-		IDR_GLSL_TEXTFRAGMENT_SHADER))
-		return false;
+	if (!m_pFontShader->Load(_T("font.shader")))
+	{
+		ATLTRACE(_T("Could not restore compiled font shader. Recompiling...\n"));
+		if (!m_pFontShader->CreateSimple(
+			_Module.GetResourceInstance(), _T("GLSL_SHADER"),
+			IDR_GLSL_TEXTVERTEX_SHADER,
+			IDR_GLSL_TEXTFRAGMENT_SHADER))
+			return false;
+	}
 
 	m_pTextureFont = new CTextureFont();
 	if (!m_pTextureFont->Create(_Module.GetResourceInstance(), RT_FONT, IDR_FONT_OPENSANS, 12))
