@@ -78,7 +78,7 @@ int CGlView::OnCreate(CREATESTRUCT *lpcs)
 		return -1;
 	}
 
-	int nDebug = 0;
+	int nDebug = GL_NONE;
 #ifdef _DEBUG
 	if (GLEW_ARB_debug_output) // don't need this check if assuming OpenGL 4.3+
 	{
@@ -102,7 +102,7 @@ int CGlView::OnCreate(CREATESTRUCT *lpcs)
 	}
 
 #ifdef _DEBUG
-	if (nDebug)
+	if (nDebug != GL_NONE)
 	{
 		glDebugMessageCallback(detail::GlDebugProc, this);
 		glDebugMessageInsert(
