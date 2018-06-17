@@ -11,6 +11,7 @@
 // Windows Header Files:
 #include <windows.h>
 #include <shellapi.h>
+#include <shlobj.h>
 
 #define GLEW_STATIC
 #include <GL/glew.h>

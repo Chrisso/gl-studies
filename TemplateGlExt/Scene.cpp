@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <AppFile.h>
 
 #include "resource.h"
 #include "Scene.h"
@@ -49,10 +50,10 @@ CScene::~CScene()
 
 	if (m_pFontShader)
 	{
-		if (!::PathFileExists(_T("font.shader")))
+		if (!::PathFileExists(APP_FILE_UNCHECKED("font.shader")))
 		{
 			ATLTRACE(_T("Saving compiled font shader to file.\n"));
-			m_pFontShader->Store(_T("font.shader"));
+			m_pFontShader->Store(APP_FILE("font.shader"));
 		}
 
 		delete m_pFontShader;
@@ -61,10 +62,10 @@ CScene::~CScene()
 
 	if (m_pShaderProgram)
 	{
-		if (!::PathFileExists(_T("default.shader")))
+		if (!::PathFileExists(APP_FILE_UNCHECKED("default.shader")))
 		{
 			ATLTRACE(_T("Saving compiled default shader to file.\n"));
-			m_pShaderProgram->Store(_T("default.shader"));
+			m_pShaderProgram->Store(APP_FILE("default.shader"));
 		}
 
 		delete m_pShaderProgram;
@@ -104,7 +105,7 @@ bool CScene::Create()
 	glBindVertexArray(0);
 
 	m_pShaderProgram = new CShaderProgram();
-	if (!m_pShaderProgram->Load(_T("default.shader")))
+	if (!m_pShaderProgram->Load(APP_FILE("default.shader")))
 	{
 		ATLTRACE(_T("Could not restore compiled default shader. Recompiling...\n"));
 		if (!m_pShaderProgram->CreateSimple(
@@ -118,7 +119,7 @@ bool CScene::Create()
 	}
 
 	m_pFontShader = new CShaderProgram();
-	if (!m_pFontShader->Load(_T("font.shader")))
+	if (!m_pFontShader->Load(APP_FILE("font.shader")))
 	{
 		ATLTRACE(_T("Could not restore compiled font shader. Recompiling...\n"));
 		if (!m_pFontShader->CreateSimple(
