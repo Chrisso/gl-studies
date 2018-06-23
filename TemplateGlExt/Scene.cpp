@@ -50,7 +50,7 @@ CScene::~CScene()
 
 	if (m_pFontShader)
 	{
-		if (!::PathFileExists(APP_FILE_UNCHECKED("font.shader")))
+		if (!APP_FILE_EXISTS("font.shader"))
 		{
 			ATLTRACE(_T("Saving compiled font shader to file.\n"));
 			m_pFontShader->Store(APP_FILE("font.shader"));
@@ -62,7 +62,7 @@ CScene::~CScene()
 
 	if (m_pShaderProgram)
 	{
-		if (!::PathFileExists(APP_FILE_UNCHECKED("default.shader")))
+		if (!APP_FILE_EXISTS("default.shader"))
 		{
 			ATLTRACE(_T("Saving compiled default shader to file.\n"));
 			m_pShaderProgram->Store(APP_FILE("default.shader"));
