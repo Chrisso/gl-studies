@@ -12,6 +12,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Utils", "Utils\Utils.vcxpro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NuklearGl", "NuklearGl\NuklearGl.vcxproj", "{B23BF2B2-FE6A-4C25-B068-293234737011}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Earth", "Earth\Earth.vcxproj", "{374D756E-2003-4023-81FF-9FE80B0BDED4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -44,6 +46,14 @@ Global
 		{B23BF2B2-FE6A-4C25-B068-293234737011}.Release|x64.Build.0 = Release|x64
 		{B23BF2B2-FE6A-4C25-B068-293234737011}.Release|x86.ActiveCfg = Release|Win32
 		{B23BF2B2-FE6A-4C25-B068-293234737011}.Release|x86.Build.0 = Release|Win32
+		{374D756E-2003-4023-81FF-9FE80B0BDED4}.Debug|x64.ActiveCfg = Debug|x64
+		{374D756E-2003-4023-81FF-9FE80B0BDED4}.Debug|x64.Build.0 = Debug|x64
+		{374D756E-2003-4023-81FF-9FE80B0BDED4}.Debug|x86.ActiveCfg = Debug|Win32
+		{374D756E-2003-4023-81FF-9FE80B0BDED4}.Debug|x86.Build.0 = Debug|Win32
+		{374D756E-2003-4023-81FF-9FE80B0BDED4}.Release|x64.ActiveCfg = Release|x64
+		{374D756E-2003-4023-81FF-9FE80B0BDED4}.Release|x64.Build.0 = Release|x64
+		{374D756E-2003-4023-81FF-9FE80B0BDED4}.Release|x86.ActiveCfg = Release|Win32
+		{374D756E-2003-4023-81FF-9FE80B0BDED4}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
