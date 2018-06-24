@@ -1,10 +1,14 @@
 #pragma once
 
+#include <SceneGraph.h>
+
 class CGlView : public CWindowImpl<CGlView>
 {
 private:
 	HDC     m_hDC = NULL;
 	HGLRC   m_hRC = NULL;
+
+	CSceneGraphNode *m_pScene = nullptr;
 
 public:
 	CGlView();

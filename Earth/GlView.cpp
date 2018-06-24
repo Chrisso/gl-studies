@@ -113,6 +113,13 @@ int CGlView::OnCreate(CREATESTRUCT *lpcs)
 	}
 #endif // _DEBUG
 
+	m_pScene = new CSceneGraphNode();
+	if (!m_pScene->Create())
+	{
+		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
+		return -1;
+	}
+
 	SetMsgHandled(FALSE);
 	return 0;
 }
@@ -120,6 +127,12 @@ int CGlView::OnCreate(CREATESTRUCT *lpcs)
 int CGlView::OnDestroy()
 {
 	ATLTRACE(_T("OnDestroy\n"));
+
+	if (m_pScene)
+	{
+		delete m_pScene;
+		m_pScene = nullptr;
+	}
 
 	if (m_hRC)
 	{
@@ -139,6 +152,12 @@ int CGlView::OnDestroy()
 
 int CGlView::OnSize(UINT nType, CSize size)
 {
+	if (m_pScene)
+	{
+		glViewport(0, 0, size.cx, size.cy);
+		m_pScene->Resize(size.cx, size.cy);
+	}
+
 	SetMsgHandled(FALSE);
 	return 0;
 }
@@ -154,7 +173,10 @@ void CGlView::Render(float time)
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// TODO
+	if (m_pScene)
+	{
+		m_pScene->Render(time);
+	}
 
 	::SwapBuffers(m_hDC);
 }
