@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "GlView.h"
+#include "Scene.h"
 
 /////////////////////////////////////////////////////////////////
 // Construction/ Destruction
@@ -119,6 +120,14 @@ int CGlView::OnCreate(CREATESTRUCT *lpcs)
 		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
 		return -1;
 	}
+
+	CScene *pMainScene = new CScene();
+	if (!pMainScene->Create())
+	{
+		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
+		return -1;
+	}
+	m_pScene->AddChild(pMainScene);
 
 	SetMsgHandled(FALSE);
 	return 0;

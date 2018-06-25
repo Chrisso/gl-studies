@@ -179,6 +179,7 @@
     <ClInclude Include="GlMainWindow.h" />
     <ClInclude Include="GlView.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -186,6 +187,7 @@
     <ClCompile Include="Earth.cpp" />
     <ClCompile Include="GlMainWindow.cpp" />
     <ClCompile Include="GlView.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -199,6 +201,10 @@
   <ItemGroup>
     <Image Include="Resources\Earth.ico" />
     <Image Include="Resources\small.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\fragments.glsl" />
+    <None Include="Resources\vertices.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
