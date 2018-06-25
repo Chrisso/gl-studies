@@ -200,9 +200,13 @@ void CScene::Resize(int width, int height)
 {
 	if (height == 0) height = 1; // avoid division by zero
 
-	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.0f, 32.0f);
+	glm::mat4 projection = glm::perspective(
+		glm::radians(45.0f),
+		(float)width / (float)height,
+		1.0f, 32.0f);
+
 	glm::mat4 modelview = glm::lookAt(
-		glm::vec3(0.0f, 2.0f, -5.0f),
+		glm::vec3(0.0f, 2.0f, 5.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f)
 	);
