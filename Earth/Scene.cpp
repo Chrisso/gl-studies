@@ -94,6 +94,14 @@ namespace detail
 
 		ATLASSERT(vertices.size() == 60 * (size_t)std::pow(4, depth));
 	}
+
+	glm::vec2 gen_sphere_texcoords(const glm::vec3& v)
+	{
+		glm::vec2 result;
+		result.s = 0.5f + (float)(std::atan2(v[0], v[2]) / (2 * M_PI));
+		result.t = 0.5f - (float)(std::asin(v[1]) / M_PI);
+		return result;
+	}
 }
 
 #ifdef _DEBUG
@@ -140,16 +148,34 @@ bool CScene::Create()
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 5 * m_numVertices, NULL, GL_STATIC_DRAW);
 	float *pGeometry = reinterpret_cast<float*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-	size_t offset = 0;
-	for (glm::vec3& v : vertices)
+	for (size_t i = 0; i < vertices.size(); i += 3) // for each triangle
 	{
-		// position
-		pGeometry[offset++] = v[0];
-		pGeometry[offset++] = v[1];
-		pGeometry[offset++] = v[2];
-		// texture coordinates
-		pGeometry[offset++] = (float)(std::atan2(v[0], v[2]) / (2*M_PI) + 0.5f);
-		pGeometry[offset++] = 1.0f - (float)(std::asin(v[1]) / M_PI + 0.5f);
+		glm::vec2 texCoords[3] = {
+			detail::gen_sphere_texcoords(vertices[i + 0]),
+			detail::gen_sphere_texcoords(vertices[i + 1]),
+			detail::gen_sphere_texcoords(vertices[i + 2])
+		};
+
+		// check for 360 deg edge, https://gamedev.stackexchange.com/a/34070
+		glm::vec3 v1 = glm::vec3(texCoords[0] - texCoords[1], 0.0f);
+		glm::vec3 v2 = glm::vec3(texCoords[2] - texCoords[1], 0.0f);
+		glm::vec3 vn = glm::cross(v1, v2);
+
+		if (vn.z <= 0) // edge crossed
+		{
+			if (texCoords[0].s > 0.9f) texCoords[0].s -= 1.0f;
+			if (texCoords[1].s > 0.9f) texCoords[1].s -= 1.0f;
+			if (texCoords[2].s > 0.9f) texCoords[2].s -= 1.0f;
+		}
+
+		for (size_t offset = 0; offset < 3; offset++)
+		{
+			pGeometry[5 * (i + offset) + 0] = vertices[i + offset].x;
+			pGeometry[5 * (i + offset) + 1] = vertices[i + offset].y;
+			pGeometry[5 * (i + offset) + 2] = vertices[i + offset].z;
+			pGeometry[5 * (i + offset) + 3] = texCoords[offset].s;
+			pGeometry[5 * (i + offset) + 4] = texCoords[offset].t;
+		}
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
