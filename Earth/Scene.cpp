@@ -61,16 +61,38 @@ namespace detail
 
 	void triangulate_sphere(std::vector<glm::vec3>& vertices, int depth)
 	{
-		// https://en.wikipedia.org/wiki/Tetrahedron
-		glm::vec3 v1(sqrtf(8.0f / 9.0f), 0.0f, -1.0f / 3.0f);
-		glm::vec3 v2(-sqrtf(2.0f / 9.0f), sqrtf(2.0f / 3.0f), -1.0f / 3.0f);
-		glm::vec3 v3(-sqrtf(2.0f / 9.0f), -sqrtf(2.0f / 3.0f), -1.0f / 3.0f);
-		glm::vec3 v4(0.0f, 0.0f, 1.0f);
+		vertices.clear();
+		vertices.reserve(60 * (size_t)std::pow(4, depth));
 
-		spheric_subdivision(v1, v3, v2, vertices, depth);
-		spheric_subdivision(v1, v4, v3, vertices, depth);
-		spheric_subdivision(v1, v2, v4, vertices, depth);
-		spheric_subdivision(v2, v3, v4, vertices, depth);
+		// https://en.wikipedia.org/wiki/Icosahedron#Cartesian_coordinates
+		glm::vec3 v = glm::normalize(glm::vec3(1.0f, 0.0f, (1.0f + std::sqrtf(5)) / 2.0f));
+
+		// https://www.cs.cmu.edu/~fp/courses/graphics/code/08-shading_code/subdivide.c
+		glm::vec3 vs[12] = {
+			glm::vec3(-v.x, 0.0f, v.z),  glm::vec3(v.x, 0.0f, v.z),
+			glm::vec3(-v.x, 0.0f, -v.z), glm::vec3(v.x, 0.0f, -v.z),
+			glm::vec3(0.0f, v.z, v.x),   glm::vec3(0.0f, v.z, -v.x),
+			glm::vec3(0.0f, -v.z, v.x),  glm::vec3(0.0f, -v.z, -v.x),
+			glm::vec3(v.z, v.x, 0.0f),   glm::vec3(-v.z, v.x, 0.0f),
+			glm::vec3(v.z, -v.x, 0.0f),  glm::vec3(-v.z, -v.x, 0.0f)
+		};
+
+		GLubyte indices[20][3] = {
+			{ 1,4,0 },{ 4,9,0 },{ 4,5,9 },{ 8,5,4 },{ 1,8,4 },
+			{ 1,10,8 },{ 10,3,8 },{ 8,3,5 },{ 3,2,5 },{ 3,7,2 },
+			{ 3,10,7 },{ 10,6,7 },{ 6,11,7 },{ 6,0,11 },{ 6,1,0 },
+			{ 10,1,6 },{ 11,0,9 },{ 2,11,9 },{ 5,2,9 },{ 11,2,7 }
+		};
+
+		for (int i = 0; i < 20; i++)
+			spheric_subdivision(
+				vs[indices[i][0]],
+				vs[indices[i][1]],
+				vs[indices[i][2]],
+				vertices,
+				depth);
+
+		ATLASSERT(vertices.size() == 60 * (size_t)std::pow(4, depth));
 	}
 }
 
@@ -102,7 +124,6 @@ bool CScene::Create()
 	// to a vector buffer and copy the whole thing when completed.
 
 	std::vector<glm::vec3> vertices;
-	vertices.reserve(12 * (size_t)std::pow(4, SPHERE_TRIANGULATION_DEPTH));
 	detail::triangulate_sphere(vertices, SPHERE_TRIANGULATION_DEPTH);
 
 	m_numVertices = (GLsizei)vertices.size();
