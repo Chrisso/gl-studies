@@ -16,6 +16,8 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GL/wglew.h>
+
+#define _USE_MATH_DEFINES
 #include <glm/glm.hpp>
 
 // C RunTime Header Files

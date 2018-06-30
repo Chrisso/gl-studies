@@ -129,22 +129,32 @@ bool CScene::Create()
 	m_numVertices = (GLsizei)vertices.size();
 	ATLTRACE(_T("#Sphere-Vertices: %d\n"), m_numVertices);
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * m_numVertices, NULL, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 5 * m_numVertices, NULL, GL_STATIC_DRAW);
 	float *pGeometry = reinterpret_cast<float*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
 	size_t offset = 0;
 	for (glm::vec3& v : vertices)
 	{
+		// position
 		pGeometry[offset++] = v[0];
 		pGeometry[offset++] = v[1];
 		pGeometry[offset++] = v[2];
+		// texture coordinates
+		pGeometry[offset++] = (float)(std::atan2(v[0], v[2]) / (2*M_PI) + 0.5f);
+		pGeometry[offset++] = (float)(std::asin(v[1]) / M_PI + 0.5f);
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(0 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
 	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+
+	glEnable(GL_CULL_FACE);
+	// glEnable(GL_DEPTH_TEST); // culling is enough since the sphere is convex
 
 	return true;
 }
@@ -184,11 +194,11 @@ void CScene::Render(float time)
 
 	if (m_nVertexArray && m_nVertexBuffer)
 	{
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // wireframe
+		// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // wireframe
 		glBindVertexArray(m_nVertexArray);
 		glDrawArrays(GL_TRIANGLES, 0, m_numVertices);
 		glBindVertexArray(0);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
 	glUseProgram(0);

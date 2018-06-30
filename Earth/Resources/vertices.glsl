@@ -3,9 +3,13 @@
 
 uniform mat4 transformation;
 
-in vec3 vertex;
+layout (location=0) in vec3 position;
+layout (location=1) in vec2 texCoord;
+
+out vec2 fragUV;
 
 void main()
 {
-	gl_Position = transformation * vec4(vertex, 1.0); 
+	fragUV = texCoord;
+	gl_Position = transformation * vec4(position, 1.0); 
 }
