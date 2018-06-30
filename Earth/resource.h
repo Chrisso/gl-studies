@@ -11,13 +11,14 @@
 #define IDS_ERR_OPENGL                  131
 #define IDR_GLSL_FRAGMENT_SHADER        132
 #define IDR_GLSL_VERTEX_SHADER          133
+#define IDR_IMAGE_BLUE_MARBLE           134
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        134
+#define _APS_NEXT_RESOURCE_VALUE        135
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           107

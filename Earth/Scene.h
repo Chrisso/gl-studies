@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Texture.h>
 #include <SceneGraph.h>
 #include <ShaderProgram.h>
 
@@ -11,6 +12,7 @@ private:
 	GLsizei m_numVertices = 0;
 
 	glm::mat4 m_matTransformation;
+	CTexture m_texEarth;
 	CShaderProgram m_ShaderProgram;
 
 public:

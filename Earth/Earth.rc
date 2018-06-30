@@ -35,6 +35,14 @@ IDR_GLSL_FRAGMENT_SHADER GLSL_SHADER             "Resources\\fragments.glsl"
 
 IDR_GLSL_VERTEX_SHADER  GLSL_SHADER             "Resources\\vertices.glsl"
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// IMAGE_JPEG
+//
+
+IDR_IMAGE_BLUE_MARBLE   IMAGE_JPEG              "Resources\\land_shallow_topo_2048.jpg"
+
 #endif    // German (Germany) resources
 /////////////////////////////////////////////////////////////////////////////
 

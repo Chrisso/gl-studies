@@ -111,6 +111,15 @@ bool CScene::Create()
 		IDR_GLSL_FRAGMENT_SHADER))
 		return false;
 
+	if (m_texEarth == 0 ||
+		!m_texEarth.LoadJPEG(
+		_Module.GetResourceInstance(),
+		_T("IMAGE_JPEG"),
+		IDR_IMAGE_BLUE_MARBLE))
+		return false;
+
+	ATLTRACE(_T("Default texture size: %dx%d\n"), m_texEarth.GetWidth(), m_texEarth.GetHeight());
+
 	glGenVertexArrays(1, &m_nVertexArray);
 	if (!m_nVertexArray) return false;
 	glBindVertexArray(m_nVertexArray);
@@ -140,7 +149,7 @@ bool CScene::Create()
 		pGeometry[offset++] = v[2];
 		// texture coordinates
 		pGeometry[offset++] = (float)(std::atan2(v[0], v[2]) / (2*M_PI) + 0.5f);
-		pGeometry[offset++] = (float)(std::asin(v[1]) / M_PI + 0.5f);
+		pGeometry[offset++] = 1.0f - (float)(std::asin(v[1]) / M_PI + 0.5f);
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
@@ -195,9 +204,11 @@ void CScene::Render(float time)
 	if (m_nVertexArray && m_nVertexBuffer)
 	{
 		// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // wireframe
+		glBindTexture(GL_TEXTURE_2D, m_texEarth);
 		glBindVertexArray(m_nVertexArray);
 		glDrawArrays(GL_TRIANGLES, 0, m_numVertices);
 		glBindVertexArray(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
 		// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
