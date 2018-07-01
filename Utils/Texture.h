@@ -15,5 +15,5 @@ public:
 	GLsizei GetWidth() const { return m_nWidth; }
 	GLsizei GetHeight() const { return m_nHeight; }
 
-	bool LoadJPEG(HINSTANCE hInst, LPCTSTR szResType, int nResId);
+	bool Load(HINSTANCE hInst, LPCTSTR szResType, int nResId, bool bHiqual=false);
 };

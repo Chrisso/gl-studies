@@ -119,14 +119,22 @@ bool CScene::Create()
 		IDR_GLSL_FRAGMENT_SHADER))
 		return false;
 
-	if (m_texEarth == 0 ||
-		!m_texEarth.LoadJPEG(
-		_Module.GetResourceInstance(),
-		_T("IMAGE_JPEG"),
-		IDR_IMAGE_BLUE_MARBLE))
+	if (m_texEarth == 0 || !m_texEarth.Load(
+		_Module.GetResourceInstance(), _T("IMAGE_JPEG"), IDR_IMAGE_BLUE_MARBLE, true))
 		return false;
 
 	ATLTRACE(_T("Default texture size: %dx%d\n"), m_texEarth.GetWidth(), m_texEarth.GetHeight());
+
+	if (GLEW_ARB_texture_filter_anisotropic)
+	{
+		float fMaxAniso = 0.0;
+		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &fMaxAniso);
+		ATLTRACE(_T("Max anisotropy: %f\n"), fMaxAniso);
+	}
+	else
+	{
+		ATLTRACE(_T("Anisotropic filtering is not supported.\n"));
+	}
 
 	glGenVertexArrays(1, &m_nVertexArray);
 	if (!m_nVertexArray) return false;
