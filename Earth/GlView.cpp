@@ -1,7 +1,9 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "GlView.h"
+
 #include "Scene.h"
+#include "Background.h"
 
 /////////////////////////////////////////////////////////////////
 // Construction/ Destruction
@@ -114,12 +116,23 @@ int CGlView::OnCreate(CREATESTRUCT *lpcs)
 	}
 #endif // _DEBUG
 
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+
 	m_pScene = new CSceneGraphNode();
 	if (!m_pScene->Create())
 	{
 		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
 		return -1;
 	}
+
+	CBackground *pBackground = new CBackground();
+	if (!pBackground->Create())
+	{
+		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
+		return -1;
+	}
+	m_pScene->AddChild(pBackground);
 
 	CScene *pMainScene = new CScene();
 	if (!pMainScene->Create())

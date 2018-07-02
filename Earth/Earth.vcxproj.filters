@@ -36,6 +36,9 @@
     <ClInclude Include="Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Background.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -51,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Background.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -69,6 +75,9 @@
     <Image Include="Resources\land_shallow_topo_2048.jpg">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="Resources\2k_stars.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\fragments.glsl">
@@ -78,5 +87,11 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="Resources\images.mk" />
+    <None Include="Resources\fragment-textured.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\vertex-passthrough.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

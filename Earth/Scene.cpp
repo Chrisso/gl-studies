@@ -196,9 +196,6 @@ bool CScene::Create()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-	glEnable(GL_CULL_FACE);
-	// glEnable(GL_DEPTH_TEST); // culling is enough since the sphere is convex
-
 	return true;
 }
 

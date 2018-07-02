@@ -35,6 +35,10 @@ IDR_GLSL_FRAGMENT_SHADER GLSL_SHADER             "Resources\\fragments.glsl"
 
 IDR_GLSL_VERTEX_SHADER  GLSL_SHADER             "Resources\\vertices.glsl"
 
+IDR_GLSL_VERTEX_PASSTHROUGH GLSL_SHADER             "Resources\\vertex-passthrough.glsl"
+
+IDR_GLSL_FRAGMENT_TEXTURED GLSL_SHADER             "Resources\\fragment-textured.glsl"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -42,6 +46,8 @@ IDR_GLSL_VERTEX_SHADER  GLSL_SHADER             "Resources\\vertices.glsl"
 //
 
 IDR_IMAGE_BLUE_MARBLE   IMAGE_JPEG              "Resources\\land_shallow_topo_2048.jpg"
+
+IDR_IMAGE_SPACE         IMAGE_JPEG              "Resources\\2k_stars.jpg"
 
 #endif    // German (Germany) resources
 /////////////////////////////////////////////////////////////////////////////

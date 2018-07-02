@@ -175,6 +175,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Background.h" />
     <ClInclude Include="Earth.h" />
     <ClInclude Include="GlMainWindow.h" />
     <ClInclude Include="GlView.h" />
@@ -184,6 +185,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Background.cpp" />
     <ClCompile Include="Earth.cpp" />
     <ClCompile Include="GlMainWindow.cpp" />
     <ClCompile Include="GlView.cpp" />
@@ -199,13 +201,16 @@
     <ResourceCompile Include="Earth.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Resources\2k_stars.jpg" />
     <Image Include="Resources\Earth.ico" />
     <Image Include="Resources\land_shallow_topo_2048.jpg" />
     <Image Include="Resources\small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\fragment-textured.glsl" />
     <None Include="Resources\fragments.glsl" />
     <None Include="Resources\images.mk" />
+    <None Include="Resources\vertex-passthrough.glsl" />
     <None Include="Resources\vertices.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
