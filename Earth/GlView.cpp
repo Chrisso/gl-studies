@@ -2,6 +2,9 @@
 #include "resource.h"
 #include "GlView.h"
 
+#include "Scene.h"
+#include "Background.h"
+
 /////////////////////////////////////////////////////////////////
 // Construction/ Destruction
 /////////////////////////////////////////////////////////////////
@@ -113,12 +116,31 @@ int CGlView::OnCreate(CREATESTRUCT *lpcs)
 	}
 #endif // _DEBUG
 
-	m_pScene = new CScene();
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+
+	m_pScene = new CSceneGraphNode();
 	if (!m_pScene->Create())
 	{
 		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
 		return -1;
 	}
+
+	CBackground *pBackground = new CBackground();
+	if (!pBackground->Create())
+	{
+		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
+		return -1;
+	}
+	m_pScene->AddChild(pBackground);
+
+	CScene *pMainScene = new CScene();
+	if (!pMainScene->Create())
+	{
+		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
+		return -1;
+	}
+	m_pScene->AddChild(pMainScene);
 
 	SetMsgHandled(FALSE);
 	return 0;
@@ -131,7 +153,7 @@ int CGlView::OnDestroy()
 	if (m_pScene)
 	{
 		delete m_pScene;
-		m_pScene = NULL;
+		m_pScene = nullptr;
 	}
 
 	if (m_hRC)
@@ -169,6 +191,9 @@ int CGlView::OnSize(UINT nType, CSize size)
 void CGlView::Render(float time)
 {
 	if (!m_hDC || !m_hRC) return;
+
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (m_pScene)
 	{
