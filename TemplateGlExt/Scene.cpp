@@ -7,17 +7,11 @@
 #include "Scene.h"
 
 /////////////////////////////////////////////////////////////////
-// Construction/ Destruction
+// CScene Construction/ Destruction
 /////////////////////////////////////////////////////////////////
 
 CScene::CScene()
 {
-	glClearDepth(1.0f);
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 CScene::~CScene()
@@ -36,45 +30,15 @@ CScene::~CScene()
 		m_nVertexBuffer = 0;
 	}
 
-	if (m_pRenderString)
+	if (!APP_FILE_EXISTS("default.shader"))
 	{
-		delete m_pRenderString;
-		m_pRenderString = nullptr;
-	}
-
-	if (m_pTextureFont)
-	{
-		delete m_pTextureFont;
-		m_pTextureFont = nullptr;
-	}
-
-	if (m_pFontShader)
-	{
-		if (!APP_FILE_EXISTS("font.shader"))
-		{
-			ATLTRACE(_T("Saving compiled font shader to file.\n"));
-			m_pFontShader->Store(APP_FILE("font.shader"));
-		}
-
-		delete m_pFontShader;
-		m_pFontShader = nullptr;
-	}
-
-	if (m_pShaderProgram)
-	{
-		if (!APP_FILE_EXISTS("default.shader"))
-		{
-			ATLTRACE(_T("Saving compiled default shader to file.\n"));
-			m_pShaderProgram->Store(APP_FILE("default.shader"));
-		}
-
-		delete m_pShaderProgram;
-		m_pShaderProgram = nullptr;
+		ATLTRACE(_T("Saving compiled default shader to file.\n"));
+		m_ShaderProgram.Store(APP_FILE("default.shader"));
 	}
 }
 
 /////////////////////////////////////////////////////////////////
-// Method Implementation
+// CScene Method Implementation
 /////////////////////////////////////////////////////////////////
 
 bool CScene::Create()
@@ -104,11 +68,10 @@ bool CScene::Create()
 	glEnableVertexAttribArray(0);
 	glBindVertexArray(0);
 
-	m_pShaderProgram = new CShaderProgram();
-	if (!m_pShaderProgram->Load(APP_FILE("default.shader")))
+	if (!m_ShaderProgram.Load(APP_FILE("default.shader")))
 	{
 		ATLTRACE(_T("Could not restore compiled default shader. Recompiling...\n"));
-		if (!m_pShaderProgram->CreateSimple(
+		if (!m_ShaderProgram.CreateSimple(
 			_Module.GetResourceInstance(), _T("GLSL_SHADER"),
 			IDR_GLSL_VERTEX_SHADER,
 			IDR_GLSL_FRAGMENT_SHADER))
@@ -118,55 +81,22 @@ bool CScene::Create()
 		}
 	}
 
-	m_pFontShader = new CShaderProgram();
-	if (!m_pFontShader->Load(APP_FILE("font.shader")))
-	{
-		ATLTRACE(_T("Could not restore compiled font shader. Recompiling...\n"));
-		if (!m_pFontShader->CreateSimple(
-			_Module.GetResourceInstance(), _T("GLSL_SHADER"),
-			IDR_GLSL_TEXTVERTEX_SHADER,
-			IDR_GLSL_TEXTFRAGMENT_SHADER))
-			return false;
-	}
-
-	m_pTextureFont = new CTextureFont();
-	if (!m_pTextureFont->Create(_Module.GetResourceInstance(), RT_FONT, IDR_FONT_OPENSANS, 12))
-	{
-		ATLTRACE(_T("Error initializing texture font!\n"));
-		return false;
-	}
-
-	USES_CONVERSION;
-
-	m_pRenderString = new CRenderString();
-	if (!m_pRenderString->CreateFormat(
-		*m_pTextureFont,
-		_T("OpenGL %s"),
-		(LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_VERSION)))))
-	{
-		ATLTRACE(_T("Error creating text rendering resources!\n"));
-		return false;
-	}
-
 	return true;
 }
 
 void CScene::Render(float time)
 {
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glUseProgram(m_ShaderProgram);
 
-	glUseProgram(*m_pShaderProgram);
-
-	m_matSceneMVP = glm::rotate(
-		m_matSceneMVP,
+	m_matMVP = glm::rotate(
+		m_matMVP,
 		glm::radians(-time / 20.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f)
 	);
 
 	glUniformMatrix4fv(
-		glGetUniformLocation(*m_pShaderProgram, "transformation"),
-		1, GL_FALSE, glm::value_ptr(m_matSceneMVP)
+		glGetUniformLocation(m_ShaderProgram, "transformation"),
+		1, GL_FALSE, glm::value_ptr(m_matMVP)
 	);
 
 	if (m_nVertexArray && m_nVertexBuffer)
@@ -178,22 +108,7 @@ void CScene::Render(float time)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
-	glUseProgram(*m_pFontShader);
-
-	glm::mat4 matText = glm::translate(m_matHudMVP, glm::vec3(10.0f, 32.0f, 0.0f));
-
-	glUniformMatrix4fv(
-		glGetUniformLocation(*m_pFontShader, "transformation"),
-		1, GL_FALSE, glm::value_ptr(matText)
-	);
-
-	glDisable(GL_DEPTH_TEST);
-	glBindTexture(GL_TEXTURE_2D, *m_pTextureFont);
-	glBindVertexArray(*m_pRenderString);
-	glDrawArrays(GL_TRIANGLES, 0, m_pRenderString->NumVertices());
-	glBindVertexArray(0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glEnable(GL_DEPTH_TEST);
+	glUseProgram(0);
 }
 
 void CScene::Resize(int width, int height)
@@ -211,7 +126,87 @@ void CScene::Resize(int width, int height)
 		glm::vec3(0.0f, 1.0f, 0.0f)
 	);
 
-	m_matSceneMVP = projection * modelview;
+	m_matMVP = projection * modelview;
+}
 
-	m_matHudMVP = glm::ortho(0.0f, (GLfloat)width, (GLfloat)height, 0.0f);
+/////////////////////////////////////////////////////////////////
+// CHud Construction/ Destruction
+/////////////////////////////////////////////////////////////////
+
+CHud::CHud()
+{
+}
+
+CHud::~CHud()
+{
+	if (!APP_FILE_EXISTS("font.shader"))
+	{
+		ATLTRACE(_T("Saving compiled font shader to file.\n"));
+		m_ShaderProgram.Store(APP_FILE("font.shader"));
+	}
+}
+
+/////////////////////////////////////////////////////////////////
+// CHud Method Implementation
+/////////////////////////////////////////////////////////////////
+
+bool CHud::Create()
+{
+	ATLTRACE(_T("Initializing...\n"));
+
+	if (!m_ShaderProgram.Load(APP_FILE("font.shader")))
+	{
+		ATLTRACE(_T("Could not restore compiled font shader. Recompiling...\n"));
+		if (!m_ShaderProgram.CreateSimple(
+			_Module.GetResourceInstance(), _T("GLSL_SHADER"),
+			IDR_GLSL_TEXTVERTEX_SHADER,
+			IDR_GLSL_TEXTFRAGMENT_SHADER))
+			return false;
+	}
+
+	if (!m_TextureFont.Create(_Module.GetResourceInstance(), RT_FONT, IDR_FONT_OPENSANS, 12))
+	{
+		ATLTRACE(_T("Error initializing texture font!\n"));
+		return false;
+	}
+
+	USES_CONVERSION;
+
+	if (!m_RenderString.CreateFormat(
+		m_TextureFont,
+		_T("OpenGL %s"),
+		(LPCTSTR)CA2CT(reinterpret_cast<const char*>(glGetString(GL_VERSION)))))
+	{
+		ATLTRACE(_T("Error creating text rendering resources!\n"));
+		return false;
+	}
+
+	return true;
+}
+
+void CHud::Render(float time)
+{
+	glUseProgram(m_ShaderProgram);
+
+	glm::mat4 matText = glm::translate(m_matMVP, glm::vec3(10.0f, 32.0f, 0.0f));
+
+	glUniformMatrix4fv(
+		glGetUniformLocation(m_ShaderProgram, "transformation"),
+		1, GL_FALSE, glm::value_ptr(matText)
+	);
+
+	glDisable(GL_DEPTH_TEST);
+	glBindTexture(GL_TEXTURE_2D, m_TextureFont);
+	glBindVertexArray(m_RenderString);
+	glDrawArrays(GL_TRIANGLES, 0, m_RenderString.NumVertices());
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glEnable(GL_DEPTH_TEST);
+
+	glUseProgram(0);
+}
+
+void CHud::Resize(int width, int height)
+{
+	m_matMVP = glm::ortho(0.0f, (GLfloat)width, (GLfloat)height, 0.0f);
 }

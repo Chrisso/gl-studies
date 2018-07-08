@@ -1,28 +1,42 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <SceneGraph.h>
 #include <ShaderProgram.h>
 #include <TextRendering.h>
 
-class CScene
+class CScene : public CSceneGraphNode
 {
 private:
 	GLuint m_nVertexArray = 0;
 	GLuint m_nVertexBuffer = 0;
-	glm::mat4 m_matSceneMVP;
-	glm::mat4 m_matHudMVP;
+	glm::mat4 m_matMVP;
 
-	CShaderProgram *m_pShaderProgram = nullptr;
-	CShaderProgram *m_pFontShader = nullptr;
-
-	CTextureFont *m_pTextureFont = nullptr;
-	CRenderString *m_pRenderString = nullptr;
+	CShaderProgram m_ShaderProgram;
 
 public:
 	CScene();
-	~CScene();
+	virtual ~CScene();
 
-	bool Create();
-	void Render(float time);
-	void Resize(int width, int height);
+	virtual bool Create();
+	virtual void Render(float time);
+	virtual void Resize(int width, int height);
+};
+
+class CHud : public CSceneGraphNode
+{
+private:
+	glm::mat4 m_matMVP;
+
+	CShaderProgram m_ShaderProgram;
+	CTextureFont m_TextureFont;
+	CRenderString m_RenderString;
+
+public:
+	CHud();
+	virtual ~CHud();
+
+	virtual bool Create();
+	virtual void Render(float time);
+	virtual void Resize(int width, int height);
 };
