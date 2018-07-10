@@ -85,15 +85,15 @@ bool CTextureFont::Create(HINSTANCE hInst, LPCTSTR szResType, int nResId, int nS
 		for (int y = 0; y < 16; y++)
 		{
 			wchar_t character = y * 16 + x;
-			if (FT_Load_Char(pFace, character, FT_LOAD_RENDER) == FT_Err_Ok &&
-				pFace->glyph->bitmap.buffer != nullptr)
+			if (FT_Load_Char(pFace, character, FT_LOAD_RENDER) == FT_Err_Ok)
 			{
-				glTexSubImage2D(
-					GL_TEXTURE_2D, 0,
-					x * m_nTextHeight, y * m_nTextHeight,
-					pFace->glyph->bitmap.width, pFace->glyph->bitmap.rows,
-					GL_RED, GL_UNSIGNED_BYTE,
-					pFace->glyph->bitmap.buffer);
+				if (pFace->glyph->bitmap.buffer != nullptr)
+					glTexSubImage2D(
+						GL_TEXTURE_2D, 0,
+						x * m_nTextHeight, y * m_nTextHeight,
+						pFace->glyph->bitmap.width, pFace->glyph->bitmap.rows,
+						GL_RED, GL_UNSIGNED_BYTE,
+						pFace->glyph->bitmap.buffer);
 
 				m_Glyphs[character].advance = pFace->glyph->advance.x / 64.0f;
 				m_Glyphs[character].size.x = (GLfloat)pFace->glyph->bitmap.width;
