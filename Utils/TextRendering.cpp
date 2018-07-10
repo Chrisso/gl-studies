@@ -109,6 +109,7 @@ bool CTextureFont::Create(HINSTANCE hInst, LPCTSTR szResType, int nResId, int nS
 		}
 
 	FT_Done_Face(pFace);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	return true;
