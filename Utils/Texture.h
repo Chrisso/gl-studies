@@ -7,6 +7,8 @@ private:
 	GLsizei m_nWidth = 0;
 	GLsizei m_nHeight = 0;
 
+	bool LoadInternal(GLubyte *pData, bool bHiqual);
+
 public:
 	CTexture();
 	~CTexture();
@@ -15,5 +17,7 @@ public:
 	GLsizei GetWidth() const { return m_nWidth; }
 	GLsizei GetHeight() const { return m_nHeight; }
 
-	bool Load(HINSTANCE hInst, LPCTSTR szResType, int nResId, bool bHiqual=false);
+	bool Load(HINSTANCE hInst, LPCTSTR szResType, int nResId, bool bHiqual = false);
+	bool Load(LPCTSTR szFileName, bool bHiqual = false);
+	void Reset();
 };
