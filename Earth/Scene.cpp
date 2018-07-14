@@ -199,6 +199,15 @@ bool CScene::Create()
 	return true;
 }
 
+void CScene::ResourceReady(int id, void* param)
+{
+	if (id == IDR_IMAGE_BLUE_MARBLE)
+	{
+		ATLTRACE(_T("Update blue marble from %s\n"), (LPCTSTR)param);
+		m_texEarth.Load((LPCTSTR)param, true);
+	}
+}
+
 void CScene::Resize(int width, int height)
 {
 	if (height == 0) height = 1; // avoid division by zero
