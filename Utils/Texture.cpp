@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <stdint.h>
 #include "Texture.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -130,4 +131,62 @@ void CTexture::Reset()
 	glDeleteTextures(1, &m_nTexture);
 	glGenTextures(1, &m_nTexture);
 	m_nWidth = m_nHeight = 0;
+}
+
+namespace detail
+{
+	struct ktx_info_t
+	{
+		uint32_t glType;
+		uint32_t glTypeSize;
+		uint32_t glFormat;
+		uint32_t glInternalFormat;
+		uint32_t glBaseInternalFormat;
+		uint32_t pixelWidth;
+		uint32_t pixelHeight;
+		uint32_t pixelDepth;
+		uint32_t numberOfArrayElements;
+		uint32_t numberOfFaces;
+		uint32_t numberOfMipmapLevels;
+	};
+}
+
+bool CTexture::Store(LPCTSTR szFileName, GLubyte *data, GLsizei width, GLsizei height)
+{
+	uint8_t magic[12] = {
+		0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A
+	};
+
+	uint32_t endianness = 0x04030201;
+	uint32_t bytesOfKeyValueData = 0;
+	uint32_t imageSize = width * height * 4 * sizeof(GLubyte);
+
+	detail::ktx_info_t info;
+	info.glType = GL_UNSIGNED_BYTE;
+	info.glTypeSize = 1;
+	info.glFormat = GL_RGBA;
+	info.glInternalFormat = info.glBaseInternalFormat = GL_RGBA;
+	info.pixelWidth = width;
+	info.pixelHeight = height;
+	info.pixelDepth = 0;
+	info.numberOfArrayElements = 0;
+	info.numberOfFaces = 1;
+	info.numberOfMipmapLevels = 1;
+
+	HANDLE hFile = ::CreateFile(szFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return false;
+
+	DWORD dwBytesWritten;
+
+	::WriteFile(hFile, magic, 12, &dwBytesWritten, NULL);
+	::WriteFile(hFile, &endianness, sizeof(uint32_t), &dwBytesWritten, NULL);
+	::WriteFile(hFile, &info, sizeof(detail::ktx_info_t), &dwBytesWritten, NULL);
+	::WriteFile(hFile, &bytesOfKeyValueData, sizeof(uint32_t), &dwBytesWritten, NULL);
+	::WriteFile(hFile, &imageSize, sizeof(uint32_t), &dwBytesWritten, NULL);
+	::WriteFile(hFile, data, imageSize, &dwBytesWritten, NULL);
+
+	::CloseHandle(hFile);
+
+	return true;
 }
