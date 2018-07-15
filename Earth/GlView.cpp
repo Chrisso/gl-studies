@@ -5,6 +5,9 @@
 #define CURL_STATICLIB
 #include <curl/curl.h>
 
+#include <stb_image.h>
+#include <stb_image_resize.h>
+
 #include "Scene.h"
 #include "Background.h"
 
@@ -50,8 +53,6 @@ namespace detail
 
 	DWORD WINAPI DownloadTextureProc(LPVOID pParam)
 	{
-		bool bResult = false;
-
 		SYSTEMTIME st;
 		::GetSystemTime(&st);
 
@@ -70,21 +71,21 @@ namespace detail
 			_T("https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73909/world.topo.bathy.200412.3x5400x2700.jpg")
 		};
 
-		CString szPng(APP_FILE_T(_tcsrchr(szUrls[st.wMonth - 1], _T('/')) + 1));
+		CString szSourceImage(APP_FILE_T(_tcsrchr(szUrls[st.wMonth - 1], _T('/')) + 1));
 
-		if (!::PathFileExists(szPng))
+		if (!::PathFileExists(szSourceImage))
 		{
 			CURL *curl = curl_easy_init();
 			if (curl)
 			{
 				HANDLE hFile = ::CreateFile(
-					szPng,
+					szSourceImage,
 					GENERIC_WRITE, 0, NULL,
 					CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 				if (hFile != INVALID_HANDLE_VALUE)
 				{
 					USES_CONVERSION;
-					ATLTRACE(_T("Downloading texture to %s...\n"), (LPCTSTR)szPng);
+					ATLTRACE(_T("Downloading texture to %s...\n"), (LPCTSTR)szSourceImage);
 					curl_easy_setopt(curl, CURLOPT_URL, (const char*)CT2CA(szUrls[st.wMonth - 1]));
 					curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, detail::CurlWriteProc);
 					curl_easy_setopt(curl, CURLOPT_WRITEDATA, hFile);
@@ -92,22 +93,42 @@ namespace detail
 					if (code != CURLE_OK)
 					{
 						ATLTRACE(_T("Curl error: %s\n"), (LPCTSTR)CA2CT(curl_easy_strerror(code)));
+						::CloseHandle(hFile);
+						::DeleteFile(szSourceImage);
 					}
-					bResult = curl_easy_perform(curl) == CURLE_OK;
-					::CloseHandle(hFile);
-
-					if (!bResult) ::DeleteFile(szPng);
+					else ::CloseHandle(hFile);
 				}
 				curl_easy_cleanup(curl);
 			}
 		}
-		else bResult = true;
 
-		if (bResult)
+		TCHAR szKtx[MAX_PATH];
+		_tcscpy_s(szKtx, MAX_PATH, (LPCTSTR)szSourceImage);
+		::PathRenameExtension(szKtx, _T(".ktx"));
+
+		if (::PathFileExists(szSourceImage) && !::PathFileExists(szKtx))
+		{
+			USES_CONVERSION;
+
+			int nChannels = 0, w, h;
+			GLubyte *pSourceData = stbi_load(CT2CA(szSourceImage), &w, &h, &nChannels, 4);
+			if (pSourceData)
+			{
+				GLubyte *pDestData = new GLubyte[2048 * 1024 * 4];
+				if (stbir_resize_uint8(pSourceData, w, h, 0, pDestData, 2048, 1024, 0, 4) == 1)
+				{
+					CTexture::Store(szKtx, pDestData, 2048, 1024);
+					ATLTRACE(_T("Texture resized and exported to %s\n"), szKtx);
+				}
+				delete[] pDestData;
+			}
+		}
+
+		if (::PathFileExists(szKtx))
 			::SendMessage(reinterpret_cast<HWND>(pParam),
 				WM_APP_RESOURCE_READY,
 				IDR_IMAGE_BLUE_MARBLE,
-				(LPARAM)(LPCTSTR)szPng);
+				(LPARAM)szKtx);
 
 		return 0;
 	}
