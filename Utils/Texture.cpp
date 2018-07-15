@@ -144,6 +144,10 @@ void CTexture::Reset()
 
 namespace detail
 {
+	// KTX file format:
+	// * https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
+	// * https://github.com/KhronosGroup/KTX-Software/blob/master/include/ktx.h
+
 	struct ktx_info_t
 	{
 		uint32_t glType;
