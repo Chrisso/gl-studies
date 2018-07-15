@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <stdint.h>
+#include <atlfile.h>
 #include "Texture.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -35,27 +36,29 @@ bool CTexture::LoadInternal(GLubyte *pData, bool bHiqual)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	if (bHiqual)
-	{
-		glGenerateMipmap(GL_TEXTURE_2D);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-		if (GLEW_ARB_texture_filter_anisotropic)
-		{
-			float fMaxAniso = 0.0;
-			glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &fMaxAniso);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, fMaxAniso);
-		}
-	}
-	else
+	if (!bHiqual)
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	}
+	else Upgrade();
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	return true;
+}
+
+void CTexture::Upgrade()
+{
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+	if (GLEW_ARB_texture_filter_anisotropic)
+	{
+		float fMaxAniso = 0.0;
+		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &fMaxAniso);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, fMaxAniso);
+	}
 }
 
 bool CTexture::Load(HINSTANCE hInst, LPCTSTR szResType, int nResId, bool bHiqual)
@@ -109,6 +112,9 @@ bool CTexture::Load(LPCTSTR szFileName, bool bHiqual)
 
 	ATLASSERT(m_nTexture != 0);
 
+	if (_tcsicmp(::PathFindExtension(szFileName), _T(".ktx")) == 0)
+		return LoadKTX(szFileName, bHiqual);
+
 	USES_CONVERSION;
 
 	int nChannels = 0;
@@ -149,6 +155,108 @@ namespace detail
 		uint32_t numberOfFaces;
 		uint32_t numberOfMipmapLevels;
 	};
+}
+
+bool CTexture::LoadKTX(LPCTSTR szFileName, bool bHiqual)
+{
+	CAtlFile file;
+	if (FAILED(file.Create(szFileName, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING)))
+	{
+		ATLTRACE(_T("KTX file not opened: %s\n"), szFileName);
+		return false;
+	}
+	
+	DWORD dwBytesRead;
+
+	uint8_t magic_ref[12] = {
+		0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A
+	};
+
+	uint8_t magic[12];
+	if (FAILED(file.Read(magic, 12, dwBytesRead)) ||
+		dwBytesRead != 12 ||
+		memcmp(magic_ref, magic, 12) != 0)
+	{
+		ATLTRACE(_T("KTX signature invalid.\n"));
+		return false;
+	}
+
+	uint32_t endianness;
+	if (FAILED(file.Read(&endianness, sizeof(uint32_t), dwBytesRead)) ||
+		dwBytesRead != sizeof(uint32_t) ||
+		endianness != 0x04030201)
+	{
+		ATLTRACE(_T("KTX endianness not supported or invalid.\n"));
+		return false;
+	}
+
+	detail::ktx_info_t info;
+	if (FAILED(file.Read(&info, sizeof(detail::ktx_info_t), dwBytesRead)) ||
+		dwBytesRead != sizeof(detail::ktx_info_t) ||
+		info.glType != GL_UNSIGNED_BYTE ||
+		info.pixelHeight == 0 || // no 1D texture
+		info.pixelDepth != 0 || // no 3D texture
+		info.numberOfArrayElements != 0 || // no array textures
+		info.numberOfFaces != 1 // no cube maps
+	)
+	{
+		ATLTRACE(_T("KTX data format not supported by this implementation.\n"));
+		return false;
+	}
+
+	uint32_t bytesOfKeyValueData;
+	if (FAILED(file.Read(&bytesOfKeyValueData, sizeof(uint32_t), dwBytesRead)) ||
+		dwBytesRead != sizeof(uint32_t))
+	{
+		ATLTRACE(_T("KTX key-value spec invalid.\n"));
+		return false;
+	}
+
+	if (FAILED(file.Seek(bytesOfKeyValueData)))
+	{
+		ATLTRACE(_T("KTX key-value skip failed.\n"));
+		return false;
+	}
+
+	uint32_t imageSize;
+	if (FAILED(file.Read(&imageSize, sizeof(uint32_t), dwBytesRead)) ||
+		dwBytesRead != sizeof(uint32_t) ||
+		imageSize == 0)
+	{
+		ATLTRACE(_T("KTX image size invalid.\n"));
+		return false;
+	}
+
+	bool bResult = false;
+	GLubyte *pData = new GLubyte[imageSize];
+	if (SUCCEEDED(file.Read(pData, imageSize, dwBytesRead)) && dwBytesRead == imageSize)
+	{
+		m_nWidth = info.pixelWidth;
+		m_nHeight = info.pixelHeight;
+
+		glBindTexture(GL_TEXTURE_2D, m_nTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, info.glInternalFormat,
+			m_nWidth, m_nHeight, 0, info.glFormat, info.glType, pData);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		if (!bHiqual)
+		{
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		}
+		else Upgrade();
+
+		bResult = true;
+	}
+	else
+	{
+		ATLTRACE(_T("KTX image data invalid.\n"));
+	}
+
+	delete[] pData;
+
+	return bResult;
 }
 
 bool CTexture::Store(LPCTSTR szFileName, GLubyte *data, GLsizei width, GLsizei height)

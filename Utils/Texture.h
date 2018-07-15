@@ -8,6 +8,8 @@ private:
 	GLsizei m_nHeight = 0;
 
 	bool LoadInternal(GLubyte *pData, bool bHiqual);
+	bool LoadKTX(LPCTSTR szFileName, bool bHiqual);
+	void Upgrade();
 
 public:
 	CTexture();
