@@ -29,11 +29,15 @@ public:
 		return FALSE;
 	}
 
+	LRESULT OnResourceReady(UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 	DECLARE_WND_CLASS_EX(NULL, CS_OWNDC, 0)
 
 	BEGIN_MSG_MAP_EX(CGlView)
 		MSG_WM_CREATE(OnCreate)
 		MSG_WM_DESTROY(OnDestroy)
 		MSG_WM_SIZE(OnSize)
+
+		MESSAGE_HANDLER_EX(WM_APP_RESOURCE_READY, OnResourceReady)
 	END_MSG_MAP()
 };

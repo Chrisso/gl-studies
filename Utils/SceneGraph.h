@@ -21,6 +21,12 @@ public:
 		return true;
 	}
 
+	virtual void ResourceReady(int id, void* param)
+	{
+		for (CSceneGraphNode* child : m_pChildren)
+			child->ResourceReady(id, param);
+	}
+
 	virtual void Resize(int width, int height)
 	{
 		for (CSceneGraphNode* child : m_pChildren)

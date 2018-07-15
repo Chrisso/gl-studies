@@ -20,6 +20,7 @@ public:
 	virtual ~CScene();
 
 	virtual bool Create();
+	virtual void ResourceReady(int id, void* param);
 	virtual void Resize(int width, int height);
 	virtual void Render(float time);
 };

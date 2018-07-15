@@ -2,6 +2,12 @@
 #include "resource.h"
 #include "GlView.h"
 
+#define CURL_STATICLIB
+#include <curl/curl.h>
+
+#include <stb_image.h>
+#include <stb_image_resize.h>
+
 #include "Scene.h"
 #include "Background.h"
 
@@ -36,6 +42,95 @@ namespace detail
 		reinterpret_cast<const CGlView*>(userParam)->OnDebugMessage(
 			source, type, id, severity, CA2CT(message)
 		);
+	}
+
+	static size_t CurlWriteProc(char *ptr, size_t size, size_t nmemb, void *userdata)
+	{
+		DWORD dwBytesWritten = 0;
+		::WriteFile(reinterpret_cast<HANDLE>(userdata), ptr, (DWORD)(size * nmemb), &dwBytesWritten, NULL);
+		return dwBytesWritten;
+	}
+
+	DWORD WINAPI DownloadTextureProc(LPVOID pParam)
+	{
+		SYSTEMTIME st;
+		::GetSystemTime(&st);
+
+		LPCTSTR szUrls[] = {
+			_T("https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73580/world.topo.bathy.200401.3x5400x2700.jpg"),
+			_T("https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73605/world.topo.bathy.200402.3x5400x2700.jpg"),
+			_T("https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73630/world.topo.bathy.200403.3x5400x2700.jpg"),
+			_T("https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73655/world.topo.bathy.200404.3x5400x2700.jpg"),
+			_T("https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73701/world.topo.bathy.200405.3x5400x2700.jpg"),
+			_T("https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73726/world.topo.bathy.200406.3x5400x2700.jpg"),
+			_T("https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73751/world.topo.bathy.200407.3x5400x2700.jpg"),
+			_T("https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73776/world.topo.bathy.200408.3x5400x2700.jpg"),
+			_T("https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73801/world.topo.bathy.200409.3x5400x2700.jpg"),
+			_T("https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73826/world.topo.bathy.200410.3x5400x2700.jpg"),
+			_T("https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73884/world.topo.bathy.200411.3x5400x2700.jpg"),
+			_T("https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73909/world.topo.bathy.200412.3x5400x2700.jpg")
+		};
+
+		CString szSourceImage(APP_FILE_T(_tcsrchr(szUrls[st.wMonth - 1], _T('/')) + 1));
+
+		if (!::PathFileExists(szSourceImage))
+		{
+			CURL *curl = curl_easy_init();
+			if (curl)
+			{
+				HANDLE hFile = ::CreateFile(
+					szSourceImage,
+					GENERIC_WRITE, 0, NULL,
+					CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+				if (hFile != INVALID_HANDLE_VALUE)
+				{
+					USES_CONVERSION;
+					ATLTRACE(_T("Downloading texture to %s...\n"), (LPCTSTR)szSourceImage);
+					curl_easy_setopt(curl, CURLOPT_URL, (const char*)CT2CA(szUrls[st.wMonth - 1]));
+					curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, detail::CurlWriteProc);
+					curl_easy_setopt(curl, CURLOPT_WRITEDATA, hFile);
+					CURLcode code = curl_easy_perform(curl);
+					if (code != CURLE_OK)
+					{
+						ATLTRACE(_T("Curl error: %s\n"), (LPCTSTR)CA2CT(curl_easy_strerror(code)));
+						::CloseHandle(hFile);
+						::DeleteFile(szSourceImage);
+					}
+					else ::CloseHandle(hFile);
+				}
+				curl_easy_cleanup(curl);
+			}
+		}
+
+		TCHAR szKtx[MAX_PATH];
+		_tcscpy_s(szKtx, MAX_PATH, (LPCTSTR)szSourceImage);
+		::PathRenameExtension(szKtx, _T(".ktx"));
+
+		if (::PathFileExists(szSourceImage) && !::PathFileExists(szKtx))
+		{
+			USES_CONVERSION;
+
+			int nChannels = 0, w, h;
+			GLubyte *pSourceData = stbi_load(CT2CA(szSourceImage), &w, &h, &nChannels, 4);
+			if (pSourceData)
+			{
+				GLubyte *pDestData = new GLubyte[2048 * 1024 * 4];
+				if (stbir_resize_uint8(pSourceData, w, h, 0, pDestData, 2048, 1024, 0, 4) == 1)
+				{
+					CTexture::Store(szKtx, pDestData, 2048, 1024);
+					ATLTRACE(_T("Texture resized and exported to %s\n"), szKtx);
+				}
+				delete[] pDestData;
+			}
+		}
+
+		if (::PathFileExists(szKtx))
+			::SendMessage(reinterpret_cast<HWND>(pParam),
+				WM_APP_RESOURCE_READY,
+				IDR_IMAGE_BLUE_MARBLE,
+				(LPARAM)szKtx);
+
+		return 0;
 	}
 }
 
@@ -142,6 +237,12 @@ int CGlView::OnCreate(CREATESTRUCT *lpcs)
 	}
 	m_pScene->AddChild(pMainScene);
 
+	if (curl_global_init(CURL_GLOBAL_ALL) == CURLE_OK)
+	{
+		::CreateThread(NULL, 0, detail::DownloadTextureProc, m_hWnd, 0, NULL);
+	}
+	else ATLTRACE(_T("Could not initialize curl!\n"));
+
 	SetMsgHandled(FALSE);
 	return 0;
 }
@@ -181,6 +282,12 @@ int CGlView::OnSize(UINT nType, CSize size)
 	}
 
 	SetMsgHandled(FALSE);
+	return 0;
+}
+
+LRESULT CGlView::OnResourceReady(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	m_pScene->ResourceReady((int)wParam, (void*)lParam);
 	return 0;
 }
 

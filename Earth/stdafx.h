@@ -38,3 +38,6 @@ extern CAppModule _Module;	// WTL version of CComModule
 #include <atlframe.h>		// WTL frame window classes
 #include <atlcrack.h>		// WTL enhanced msg map macros
 #include <atlctrls.h>		// WTL windows controls
+
+#define WM_APP_RESOURCE_READY (WM_APP+1)
+#include <AppFile.h>

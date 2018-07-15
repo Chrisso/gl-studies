@@ -8,6 +8,8 @@ private:
 	GLsizei m_nHeight = 0;
 
 	bool LoadInternal(GLubyte *pData, bool bHiqual);
+	bool LoadKTX(LPCTSTR szFileName, bool bHiqual);
+	void Upgrade();
 
 public:
 	CTexture();
@@ -20,4 +22,6 @@ public:
 	bool Load(HINSTANCE hInst, LPCTSTR szResType, int nResId, bool bHiqual = false);
 	bool Load(LPCTSTR szFileName, bool bHiqual = false);
 	void Reset();
+
+	static bool Store(LPCTSTR szFileName, GLubyte *data, GLsizei width, GLsizei height);
 };
