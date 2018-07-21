@@ -9,8 +9,8 @@
 #define ID_INFO_PANE                    129
 #define IDS_APP_INFO                    130
 #define IDS_ERR_OPENGL                  131
-#define IDR_GLSL_FRAGMENT_SHADER        132
-#define IDR_GLSL_VERTEX_SHADER          133
+#define IDR_GLSL_FRAGMENT_EARTH         132
+#define IDR_GLSL_VERTEX_EARTH           133
 #define IDR_IMAGE_BLUE_MARBLE           134
 #define IDR_IMAGE_SPACE                 135
 #define IDR_GLSL_VERTEX_PASSTHROUGH     136

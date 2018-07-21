@@ -115,8 +115,8 @@ bool CScene::Create()
 	if (!m_ShaderProgram.CreateSimple(
 		_Module.GetResourceInstance(),
 		_T("GLSL_SHADER"),
-		IDR_GLSL_VERTEX_SHADER,
-		IDR_GLSL_FRAGMENT_SHADER))
+		IDR_GLSL_VERTEX_EARTH,
+		IDR_GLSL_FRAGMENT_EARTH))
 		return false;
 
 	if (m_texEarth == 0 || !m_texEarth.Load(

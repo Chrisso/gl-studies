@@ -80,10 +80,10 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\fragments.glsl">
+    <None Include="Resources\fragment-earth.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Resources\vertices.glsl">
+    <None Include="Resources\vertex-earth.glsl">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="Resources\images.mk" />

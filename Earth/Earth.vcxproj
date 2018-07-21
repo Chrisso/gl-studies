@@ -208,10 +208,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\fragment-textured.glsl" />
-    <None Include="Resources\fragments.glsl" />
+    <None Include="Resources\fragment-earth.glsl" />
     <None Include="Resources\images.mk" />
     <None Include="Resources\vertex-passthrough.glsl" />
-    <None Include="Resources\vertices.glsl" />
+    <None Include="Resources\vertex-earth.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

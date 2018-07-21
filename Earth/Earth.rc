@@ -31,9 +31,9 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
 // GLSL_SHADER
 //
 
-IDR_GLSL_FRAGMENT_SHADER GLSL_SHADER             "Resources\\fragments.glsl"
+IDR_GLSL_FRAGMENT_EARTH GLSL_SHADER             "Resources\\fragment-earth.glsl"
 
-IDR_GLSL_VERTEX_SHADER  GLSL_SHADER             "Resources\\vertices.glsl"
+IDR_GLSL_VERTEX_EARTH  GLSL_SHADER             "Resources\\vertex-earth.glsl"
 
 IDR_GLSL_VERTEX_PASSTHROUGH GLSL_SHADER             "Resources\\vertex-passthrough.glsl"
 
