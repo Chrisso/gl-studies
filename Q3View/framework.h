@@ -12,6 +12,10 @@
 #include <GL/glew.h>
 #include <GL/wglew.h>
 
+#define ZLIB_WINAPI // only with static link!
+#include <zlib.h>
+#include <unzip.h>
+
 // C RunTime Header Files
 #include <stdlib.h>
 #include <malloc.h>
