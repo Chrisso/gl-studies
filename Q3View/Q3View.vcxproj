@@ -186,7 +186,6 @@
     <ClInclude Include="Q3Model.h" />
     <ClInclude Include="Q3View.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="Scene.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -200,7 +199,6 @@
     </ClCompile>
     <ClCompile Include="Q3Model.cpp" />
     <ClCompile Include="Q3View.cpp" />
-    <ClCompile Include="Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Q3View.rc" />

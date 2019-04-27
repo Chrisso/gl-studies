@@ -1,11 +1,12 @@
 //[VERTEX SHADER]
 #version 400
 
-uniform mat4 transformation;
+uniform mat4 projection;
+uniform mat4 modelview;
 
 in vec3 vertex;
 
 void main()
 {
-	gl_Position = transformation * vec4(vertex, 1.0); 
+	gl_Position = (projection * modelview) * vec4(vertex, 1.0); 
 }
