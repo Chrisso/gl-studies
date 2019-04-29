@@ -1,4 +1,6 @@
 #include "pch.h"
+#include <list>
+#include <sstream>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Q3Model.h"
@@ -52,6 +54,14 @@ namespace Detail
 		int  nTexCoordOffset;
 		int  nVertexOffset;
 		int  nMeshSize;
+	};
+
+	struct MD3ANIM
+	{
+		int nStartFrame;
+		int nFrameCount;
+		int nLoops;
+		int nFramesPerSec;
 	};
 }
 
@@ -128,7 +138,12 @@ MD3MeshGeometry::~MD3MeshGeometry()
 
 void MD3MeshGeometry::Render(float time)
 {
+	ATLASSERT(m_nCurrentFrame < m_nFrames);
+	size_t nVertexOffset = (size_t)m_nCurrentFrame * m_nVertices * 3 * sizeof(GLfloat);
+
 	glBindVertexArray(m_nVertexArray);
+	glBindBuffer(GL_ARRAY_BUFFER, m_nVertexBuffer);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const GLvoid*>(nVertexOffset));
 	glDrawElements(GL_TRIANGLES, m_nTriangles * 3, GL_UNSIGNED_INT, (void*)0);
 	glBindVertexArray(0);
 }
@@ -214,17 +229,43 @@ MD3Mesh::~MD3Mesh()
 	ATLTRACE(_T("Cleaning \"%s\".\n"), (LPCTSTR)CA2CT(m_sName.c_str()));
 }
 
+void MD3Mesh::Render(float time)
+{
+	m_fAnimationTime += time / 1000.0f; // ms to sec
+	while (m_fAnimationTime >= 60.0f)
+		m_fAnimationTime -= 60.0f;
+
+	m_nCurrentFrame = static_cast<int>(m_fAnimationTime * m_Animation.m_nFramesPerSecond);
+	m_nCurrentFrame = m_Animation.m_nLength == 0 ?
+		m_Animation.m_nStart : (m_nCurrentFrame % m_Animation.m_nLength) + m_Animation.m_nStart;
+
+	ForEachChild([this](CSceneGraphNode * pNode) {
+		reinterpret_cast<MD3MeshGeometry*>(pNode)->SetCurrentFrame(m_nCurrentFrame);
+	});
+
+	CSceneGraphNode::Render(time);
+}
+
 glm::mat4 MD3Mesh::Transform(const std::string& name)
 {
+	if (m_nTags == 1) // shortcut
+		return m_Tags[m_nCurrentFrame].transform;
+
 	for (int i = 0; i < m_nTags; i++)
 	{
-		if (m_Tags[i].name.compare(name) == 0)
-		{
-			return m_Tags[i].transform;
-		}
+		int index = m_nTags * m_nCurrentFrame + i;
+		if (m_Tags[index].name.compare(name) == 0)
+			return m_Tags[index].transform;
 	}
 
 	return glm::mat4(1.0f);
+}
+
+void MD3Mesh::Animate(const MD3AnimationInfo& info)
+{
+	m_Animation = info;
+	m_fAnimationTime = 0.0f;
+	m_nCurrentFrame = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -232,6 +273,9 @@ glm::mat4 MD3Mesh::Transform(const std::string& name)
 ///////////////////////////////////////////////////////////////////////////////
 
 Q3Model::Q3Model(LPCTSTR szFile)
+	: m_Animations(Q3_NUM_ANIMATIONS), 
+	  m_matModelView(1.0f),
+	  m_matProjection(1.0f)
 {
 	USES_CONVERSION;
 	ATLTRACE(_T("Try loading model from %s...\n"), szFile);
@@ -277,6 +321,14 @@ Q3Model::Q3Model(LPCTSTR szFile)
 			strcpy_s(szEntry, szModelPath);
 			strcat_s(szEntry, "lower.md3");
 			m_pLower.reset(new MD3Mesh(szEntry, zip));
+
+			strcpy_s(szEntry, szModelPath);
+			strcat_s(szEntry, "animation.cfg");
+			if (ParseAnimationScript(szEntry, zip))
+			{
+				m_pUpper->Animate(m_Animations[TORSO_STAND]);
+				m_pLower->Animate(m_Animations[LEGS_WALK]);
+			}
 		}
 
 		unzClose(zip);
@@ -296,6 +348,61 @@ Q3Model::Q3Model(LPCTSTR szFile)
 
 Q3Model::~Q3Model()
 {
+}
+
+bool Q3Model::ParseAnimationScript(const std::string& name, unzFile source)
+{
+	USES_CONVERSION;
+	unz_file_info fi;
+
+	if (unzLocateFile(source, name.c_str(), 2) != UNZ_OK)
+	{
+		ATLTRACE(_T("File not found: \"%s\".\n"), (LPCTSTR)CA2CT(name.c_str()));
+		return false;
+	}
+	
+	ATLTRACE(_T("Loading \"%s\"...\n"), (LPCTSTR)CA2CT(name.c_str()));
+	ATLENSURE(unzGetCurrentFileInfo(source, &fi, nullptr, 0, nullptr, 0, nullptr, 0) == UNZ_OK);
+
+	std::vector<char> mem(fi.uncompressed_size);
+	ATLENSURE(unzOpenCurrentFile(source) == UNZ_OK);
+	ATLENSURE(unzReadCurrentFile(source, mem.data(), fi.uncompressed_size) == fi.uncompressed_size);
+	ATLENSURE(unzCloseCurrentFile(source) == UNZ_OK);
+
+	std::string line;
+	std::string cfg(mem.begin(), mem.end());
+	std::istringstream stream(cfg);
+	std::list<Detail::MD3ANIM> animations;
+
+	while (std::getline(stream, line))
+	{
+		if (line.length() > 0 && line[0] >= '0' && line[0] <= '9')
+		{
+			Detail::MD3ANIM anim;
+			std::istringstream parser(line);
+			parser >> anim.nStartFrame >> anim.nFrameCount >> anim.nLoops >> anim.nFramesPerSec;
+			animations.push_back(anim);
+		}
+	}
+
+	ATLTRACE(_T("Loaded %d animations."), animations.size());
+	ATLENSURE(animations.size() == Q3_NUM_ANIMATIONS);
+
+	int counter = 0;
+	for (auto anim = animations.cbegin(); anim != animations.cend(); anim++)
+	{
+		m_Animations[counter].m_nStart = anim->nStartFrame;
+		m_Animations[counter].m_nLength = anim->nFrameCount;
+		m_Animations[counter].m_nLooping = anim->nLoops;
+		m_Animations[counter].m_nFramesPerSecond = anim->nFramesPerSec;
+		counter++;
+	}
+	
+	int skip_torso = m_Animations[LEGS_WALKCR].m_nStart - m_Animations[TORSO_GESTURE].m_nStart;
+	for (int i = LEGS_WALKCR; i < Q3_NUM_ANIMATIONS; i++)
+		m_Animations[i].m_nStart -= skip_torso;
+
+	return true;
 }
 
 void Q3Model::Render(float time)

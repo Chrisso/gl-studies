@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <functional>
 
 class CSceneGraphNode
 {
@@ -42,5 +43,11 @@ public:
 	virtual void AddChild(CSceneGraphNode *child)
 	{
 		m_pChildren.push_back(child);
+	}
+
+	void ForEachChild(std::function<void(CSceneGraphNode*)> func)
+	{
+		for (auto pChild = m_pChildren.begin(); pChild != m_pChildren.end(); pChild++)
+			func(*pChild);
 	}
 };
