@@ -28,6 +28,7 @@ public:
 	int OnClose();
 	int OnDestroy();
 
+	void OnFileOpen(UINT uNotifyCode, int nID, HWND hWnd);
 	void OnFileExit(UINT uNotifyCode, int nID, HWND hWnd);
 	void OnHelpInfo(UINT uNotifyCode, int nID, HWND hWnd);
 
@@ -48,6 +49,7 @@ public:
 		MSG_WM_CLOSE(OnClose)
 		MSG_WM_DESTROY(OnDestroy)
 
+		COMMAND_ID_HANDLER_EX(ID_FILE_OPEN, OnFileOpen)
 		COMMAND_ID_HANDLER_EX(IDM_EXIT, OnFileExit)
 		COMMAND_ID_HANDLER_EX(IDM_ABOUT, OnHelpInfo)
 

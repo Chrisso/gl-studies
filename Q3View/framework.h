@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <shellapi.h>
 #include <shlobj.h>
+#include <shlwapi.h>
 
 #define GLEW_STATIC
 #include <GL/glew.h>

@@ -9,6 +9,7 @@
 namespace Detail
 {
 	// see also https://icculus.org/~phaethon/q3a/formats/md3format.html
+	// models: https://ioquake3.org/extras/models/
 
 	struct MD3HEADER
 	{
@@ -278,7 +279,7 @@ Q3Model::Q3Model(LPCTSTR szFile)
 	  m_matProjection(1.0f)
 {
 	USES_CONVERSION;
-	ATLTRACE(_T("Try loading model from %s...\n"), szFile);
+	ATLTRACE(_T("Try loading model from \"%s\"...\n"), szFile);
 
 	unzFile zip = unzOpen(CT2CA(szFile));
 	if (zip)
@@ -295,7 +296,7 @@ Q3Model::Q3Model(LPCTSTR szFile)
 		{
 			if (unzGetCurrentFileInfo(zip, &fi, szEntry, MAX_PATH, nullptr, 0, nullptr, 0) == UNZ_OK)
 			{
-				ATLTRACE(_T("Zip entry: %s\n"), (LPCTSTR)CA2CT(szEntry));
+				// ATLTRACE(_T("Zip entry: %s\n"), (LPCTSTR)CA2CT(szEntry));
 				if (fi.size_filename > 8 && _stricmp(szEntry + fi.size_filename - 8, "head.md3") == 0)
 				{
 					strncpy_s(szModelPath, szEntry, fi.size_filename - 8);
@@ -348,6 +349,7 @@ Q3Model::Q3Model(LPCTSTR szFile)
 
 Q3Model::~Q3Model()
 {
+	ATLTRACE(_T("Model cleanup.\n"));
 }
 
 bool Q3Model::ParseAnimationScript(const std::string& name, unzFile source)

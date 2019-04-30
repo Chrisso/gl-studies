@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "resource.h"
 #include "GlView.h"
+#include "Q3Model.h"
 
 /////////////////////////////////////////////////////////////////
 // Construction/ Destruction
@@ -120,13 +121,23 @@ int CGlView::OnCreate(CREATESTRUCT *lpcs)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	m_pScene = new CSceneGraphNode();
-	if (!m_pScene->Create())
+#ifdef UNICODE
+	int nArgs = 0;
+	LPWSTR* szArglist = ::CommandLineToArgvW(::GetCommandLine(), &nArgs);
+	if (szArglist && nArgs > 1 &&
+		_tcsicmp(::PathFindExtension(szArglist[nArgs - 1]), _T(".pk3")) == 0 &&
+		::PathFileExists(szArglist[nArgs - 1]))
 	{
-		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
-		return -1;
+		Load(szArglist[nArgs - 1]);
 	}
+	::LocalFree(szArglist);
+#endif
 
+	if (m_pScene == nullptr && ::PathFileExists(_T("tux.pk3")))
+		Load(_T("tux.pk3"));
+
+	if (m_pScene == nullptr)
+		m_pScene = new CSceneGraphNode();
 
 	SetMsgHandled(FALSE);
 	return 0;
@@ -173,6 +184,26 @@ int CGlView::OnSize(UINT nType, CSize size)
 ///////////////////////////////////////////////////////////////////////////////
 // Application logic
 ///////////////////////////////////////////////////////////////////////////////
+
+void CGlView::Load(LPCTSTR szFile)
+{
+	if (m_pScene) delete m_pScene;
+
+	m_pScene = new CSceneGraphNode();
+	if (!m_pScene->Create())
+	{
+		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
+		return;
+	}
+
+	// check load success, use "Create"
+	m_pScene->AddChild(new Q3Model(szFile));
+
+	// recalc transformations
+	CRect rect;
+	GetClientRect(&rect);
+	OnSize(SIZE_RESTORED, CSize(rect.Width(), rect.Height()));
+}
 
 void CGlView::Render(float time)
 {

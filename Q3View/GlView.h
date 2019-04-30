@@ -15,6 +15,7 @@ public:
 	~CGlView();
 
 	void Render(float time);
+	void Load(LPCTSTR szFile);
 
 	int OnCreate(CREATESTRUCT *lpcs);
 	int OnDestroy();

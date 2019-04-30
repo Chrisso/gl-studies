@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <atldlgs.h>
 #include "GlMainWindow.h"
 
 /////////////////////////////////////////////////////////////////
@@ -101,6 +102,20 @@ LRESULT CGlMainWindow::OnBenchmark(UINT uMsg, WPARAM wParam, LPARAM lParam)
 ///////////////////////////////////////////////////////////////////////////////
 // Main-Menu message handling
 ///////////////////////////////////////////////////////////////////////////////
+
+void CGlMainWindow::OnFileOpen(UINT uNotifyCode, int nID, HWND hWnd)
+{
+	CFileDialog dlg(
+		TRUE, _T("pk3"), NULL, OFN_FILEMUSTEXIST,
+		_T("Quake 3 Model Files (*.pk3)\0*.pk3\0All Files (*.*)\0*.*\0"),
+		m_hWnd);
+
+	if (dlg.DoModal() == IDOK)
+	{
+		ATLTRACE(_T("Opening file \"%s\"...\n"), dlg.m_szFileName);
+		m_View.Load(dlg.m_szFileName);
+	}
+}
 
 void CGlMainWindow::OnFileExit(UINT uNotifyCode, int nID, HWND hWnd)
 {
