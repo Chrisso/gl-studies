@@ -96,6 +96,8 @@ public:
 	virtual ~Q3Model();
 	virtual void Render(float time);
 	virtual void Resize(int width, int height);
+
+	void SetAnimation(int id);
 };
 
 #define Q3_NUM_ANIMATIONS 25

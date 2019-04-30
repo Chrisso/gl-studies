@@ -1,14 +1,13 @@
 #pragma once
 
-#include <SceneGraph.h>
+#include "Q3Model.h"
 
 class CGlView : public CWindowImpl<CGlView>
 {
 private:
-	HDC     m_hDC = NULL;
-	HGLRC   m_hRC = NULL;
-
-	CSceneGraphNode *m_pScene = nullptr;
+	HDC      m_hDC = NULL;
+	HGLRC    m_hRC = NULL;
+	Q3Model *m_pModel = nullptr;
 
 public:
 	CGlView();
@@ -16,6 +15,7 @@ public:
 
 	void Render(float time);
 	void Load(LPCTSTR szFile);
+	void SetAnimation(int id);
 
 	int OnCreate(CREATESTRUCT *lpcs);
 	int OnDestroy();

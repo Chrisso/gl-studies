@@ -51,6 +51,43 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "E&xit\tAlt+F4",               IDM_EXIT
     END
+    POPUP "&Animation"
+    BEGIN
+        POPUP "Both"
+        BEGIN
+            MENUITEM "BOTH_DEATH1",             ID_BOTH_DEATH1
+            MENUITEM "BOTH_DEAD1",              ID_BOTH_DEAD1
+            MENUITEM "BOTH_DEATH2",             ID_BOTH_DEATH2
+            MENUITEM "BOTH_DEAD2",              ID_BOTH_DEAD2
+            MENUITEM "BOTH_DEATH3",             ID_BOTH_DEATH3
+            MENUITEM "BOTH_DEAD3",              ID_BOTH_DEAD3
+        END
+        POPUP "Torso"
+        BEGIN
+            MENUITEM "TORSO_GESTURE",           ID_TORSO_GESTURE
+            MENUITEM "TORSO_ATTACK",            ID_TORSO_ATTACK
+            MENUITEM "TORSO_ATTACK2",           ID_TORSO_ATTACK2
+            MENUITEM "TORSO_DROP",              ID_TORSO_DROP
+            MENUITEM "TORSO_RAISE",             ID_TORSO_RAISE
+            MENUITEM "TORSO_STAND",             ID_TORSO_STAND
+            MENUITEM "TORSO_STAND2",            ID_TORSO_STAND2
+        END
+        POPUP "Legs"
+        BEGIN
+            MENUITEM "LEGS_WALKCR",             ID_LEGS_WALKCR
+            MENUITEM "LEGS_WALK",               ID_LEGS_WALK
+            MENUITEM "LEGS_RUN",                ID_LEGS_RUN
+            MENUITEM "LEGS_BACK",               ID_LEGS_BACK
+            MENUITEM "LEGS_SWIM",               ID_LEGS_SWIM
+            MENUITEM "LEGS_JUMP",               ID_LEGS_JUMP
+            MENUITEM "LEGS_LAND",               ID_LEGS_LAND
+            MENUITEM "LEGS_JUMPB",              ID_LEGS_JUMPB
+            MENUITEM "LEGS_LANDB",              ID_LEGS_LANDB
+            MENUITEM "LEGS_IDLE",               ID_LEGS_IDLE
+            MENUITEM "LEGS_IDLECR",             ID_LEGS_IDLECR
+            MENUITEM "LEGS_TURN",               ID_LEGS_TURN
+        END
+    END
     POPUP "&Help"
     BEGIN
         MENUITEM "&About ...",                  IDM_ABOUT

@@ -30,6 +30,7 @@ public:
 
 	void OnFileOpen(UINT uNotifyCode, int nID, HWND hWnd);
 	void OnFileExit(UINT uNotifyCode, int nID, HWND hWnd);
+	void OnSetAnimation(UINT uNotifyCode, int nID, HWND hWnd);
 	void OnHelpInfo(UINT uNotifyCode, int nID, HWND hWnd);
 
 	LRESULT OnBenchmark(UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -51,6 +52,7 @@ public:
 
 		COMMAND_ID_HANDLER_EX(ID_FILE_OPEN, OnFileOpen)
 		COMMAND_ID_HANDLER_EX(IDM_EXIT, OnFileExit)
+		COMMAND_RANGE_HANDLER_EX(ID_BOTH_DEATH1, ID_LEGS_TURN, OnSetAnimation)
 		COMMAND_ID_HANDLER_EX(IDM_ABOUT, OnHelpInfo)
 
 		MESSAGE_HANDLER_EX(WM_APP_BENCHMARK, OnBenchmark)

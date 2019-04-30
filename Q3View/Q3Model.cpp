@@ -327,8 +327,8 @@ Q3Model::Q3Model(LPCTSTR szFile)
 			strcat_s(szEntry, "animation.cfg");
 			if (ParseAnimationScript(szEntry, zip))
 			{
-				m_pUpper->Animate(m_Animations[TORSO_STAND]);
-				m_pLower->Animate(m_Animations[LEGS_WALK]);
+				m_pUpper->Animate(m_Animations[TORSO_STAND2]);
+				m_pLower->Animate(m_Animations[LEGS_IDLE]);
 			}
 		}
 
@@ -405,6 +405,27 @@ bool Q3Model::ParseAnimationScript(const std::string& name, unzFile source)
 		m_Animations[i].m_nStart -= skip_torso;
 
 	return true;
+}
+
+void Q3Model::SetAnimation(int id)
+{
+	ATLASSERT(id >= 0 && id < Q3_NUM_ANIMATIONS);
+
+	if (id >= BOTH_DEATH1 && id <= BOTH_DEAD3)
+	{
+		m_pUpper->Animate(m_Animations[id]);
+		m_pLower->Animate(m_Animations[id]);
+	}
+
+	if (id >= TORSO_GESTURE && id <= TORSO_STAND2)
+	{
+		m_pUpper->Animate(m_Animations[id]);
+	}
+
+	if (id >= LEGS_WALKCR && id <= LEGS_TURN)
+	{
+		m_pLower->Animate(m_Animations[id]);
+	}
 }
 
 void Q3Model::Render(float time)

@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "resource.h"
 #include "GlView.h"
-#include "Q3Model.h"
 
 /////////////////////////////////////////////////////////////////
 // Construction/ Destruction
@@ -133,11 +132,8 @@ int CGlView::OnCreate(CREATESTRUCT *lpcs)
 	::LocalFree(szArglist);
 #endif
 
-	if (m_pScene == nullptr && ::PathFileExists(_T("tux.pk3")))
+	if (m_pModel == nullptr && ::PathFileExists(_T("tux.pk3")))
 		Load(_T("tux.pk3"));
-
-	if (m_pScene == nullptr)
-		m_pScene = new CSceneGraphNode();
 
 	SetMsgHandled(FALSE);
 	return 0;
@@ -147,10 +143,10 @@ int CGlView::OnDestroy()
 {
 	ATLTRACE(_T("OnDestroy\n"));
 
-	if (m_pScene)
+	if (m_pModel)
 	{
-		delete m_pScene;
-		m_pScene = nullptr;
+		delete m_pModel;
+		m_pModel = nullptr;
 	}
 
 	if (m_hRC)
@@ -171,10 +167,10 @@ int CGlView::OnDestroy()
 
 int CGlView::OnSize(UINT nType, CSize size)
 {
-	if (m_pScene)
+	if (m_pModel)
 	{
 		glViewport(0, 0, size.cx, size.cy);
-		m_pScene->Resize(size.cx, size.cy);
+		m_pModel->Resize(size.cx, size.cy);
 	}
 
 	SetMsgHandled(FALSE);
@@ -187,22 +183,21 @@ int CGlView::OnSize(UINT nType, CSize size)
 
 void CGlView::Load(LPCTSTR szFile)
 {
-	if (m_pScene) delete m_pScene;
-
-	m_pScene = new CSceneGraphNode();
-	if (!m_pScene->Create())
-	{
-		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
-		return;
-	}
+	if (m_pModel) delete m_pModel;
 
 	// check load success, use "Create"
-	m_pScene->AddChild(new Q3Model(szFile));
+	m_pModel = new Q3Model(szFile);
 
 	// recalc transformations
 	CRect rect;
 	GetClientRect(&rect);
 	OnSize(SIZE_RESTORED, CSize(rect.Width(), rect.Height()));
+}
+
+void CGlView::SetAnimation(int id)
+{
+	if (m_pModel)
+		m_pModel->SetAnimation(id);
 }
 
 void CGlView::Render(float time)
@@ -212,9 +207,9 @@ void CGlView::Render(float time)
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	if (m_pScene)
+	if (m_pModel)
 	{
-		m_pScene->Render(time);
+		m_pModel->Render(time);
 	}
 
 	::SwapBuffers(m_hDC);
