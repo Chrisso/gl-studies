@@ -114,6 +114,14 @@ void CGlMainWindow::OnFileOpen(UINT uNotifyCode, int nID, HWND hWnd)
 	{
 		ATLTRACE(_T("Opening file \"%s\"...\n"), dlg.m_szFileName);
 		m_View.Load(dlg.m_szFileName);
+
+		CString szName;
+		szName.LoadString(IDR_MAINFRAME);
+
+		CString szTitle;
+		szTitle.Format(_T("%s - %s"), szName, dlg.m_szFileTitle);
+
+		SetWindowText(szTitle);
 	}
 }
 
