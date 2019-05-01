@@ -553,11 +553,18 @@ void Q3Model::SetAnimation(int id)
 void Q3Model::Render(float time)
 {
 	glUseProgram(m_Shader);
-	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // wireframe
+
+	if (m_bWireframe)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // wireframe
+
+	glUniform1i(
+		glGetUniformLocation(m_Shader, "wireframe"),
+		m_bWireframe ? 1 : 0
+	);
 
 	m_matModelView = glm::rotate(
 		m_matModelView,
-		glm::radians(-time / 20.0f),
+		glm::radians(-time / 50.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f)
 	);
 
@@ -607,7 +614,9 @@ void Q3Model::Render(float time)
 		m_pHead->Render(time);
 	}
 
-	// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	if (m_bWireframe)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glUseProgram(0);
 }

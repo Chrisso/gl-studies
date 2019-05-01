@@ -128,6 +128,12 @@ void CGlMainWindow::OnSetAnimation(UINT uNotifyCode, int nID, HWND hWnd)
 	m_View.SetAnimation(nID - ID_BOTH_DEATH1);
 }
 
+void CGlMainWindow::OnToggleWireframe(UINT uNotifyCode, int nID, HWND hWnd)
+{
+	ATLTRACE(_T("Toggling wireframe %d...\n"));
+	m_View.ToggleWireframe();
+}
+
 void CGlMainWindow::OnHelpInfo(UINT uNotifyCode, int nID, HWND hWnd)
 {
 	::AtlMessageBox(m_hWnd, IDS_APP_INFO, IDR_MAINFRAME);

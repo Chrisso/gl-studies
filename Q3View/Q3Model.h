@@ -84,6 +84,7 @@ public:
 class Q3Model : public CSceneGraphNode
 {
 private:
+	bool m_bWireframe = false;
 	CShaderProgram m_Shader;
 	std::unique_ptr<MD3Mesh> m_pLower;
 	std::unique_ptr<MD3Mesh> m_pUpper;
@@ -107,6 +108,8 @@ public:
 	virtual void Resize(int width, int height);
 
 	void SetAnimation(int id);
+	void SetWireframe(bool val) { m_bWireframe = val; }
+	bool GetWireframe() const { return m_bWireframe; }
 };
 
 #define Q3_NUM_ANIMATIONS 25

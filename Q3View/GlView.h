@@ -16,6 +16,7 @@ public:
 	void Render(float time);
 	void Load(LPCTSTR szFile);
 	void SetAnimation(int id);
+	void ToggleWireframe();
 
 	int OnCreate(CREATESTRUCT *lpcs);
 	int OnDestroy();

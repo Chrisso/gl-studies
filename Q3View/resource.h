@@ -37,7 +37,7 @@
 #define ID_LEGS_IDLE                    32793
 #define ID_LEGS_IDLECR                  32794
 #define ID_LEGS_TURN                    32795
-
+#define ID_VIEW_TOGGLEWIREFRAME         32796
 
 // Next default values for new objects
 // 
@@ -45,7 +45,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        133
-#define _APS_NEXT_COMMAND_VALUE         32796
+#define _APS_NEXT_COMMAND_VALUE         32797
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           106
 #endif

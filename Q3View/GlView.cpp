@@ -200,6 +200,12 @@ void CGlView::SetAnimation(int id)
 		m_pModel->SetAnimation(id);
 }
 
+void CGlView::ToggleWireframe()
+{
+	if (m_pModel)
+		m_pModel->SetWireframe(!m_pModel->GetWireframe());
+}
+
 void CGlView::Render(float time)
 {
 	if (!m_hDC || !m_hRC) return;
