@@ -20,6 +20,7 @@ public:
 	GLsizei GetHeight() const { return m_nHeight; }
 
 	bool Load(HINSTANCE hInst, LPCTSTR szResType, int nResId, bool bHiqual = false);
+	bool Load(GLubyte *pMemory, size_t nLength, bool bHiqual = false);
 	bool Load(LPCTSTR szFileName, bool bHiqual = false);
 	void Reset();
 

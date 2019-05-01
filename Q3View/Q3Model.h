@@ -3,9 +3,11 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <map>
 #include <glm/glm.hpp>
 #include <ShaderProgram.h>
 #include <SceneGraph.h>
+#include <Texture.h>
 
 class MD3Tag
 {
@@ -46,10 +48,11 @@ private:
 
 	GLuint m_nVertexArray = 0;
 	GLuint m_nVertexBuffer = 0;
+	GLuint m_nTexCoordBuffer = 0;
 	GLuint m_nIndexBuffer = 0;
 
 public:
-	MD3MeshGeometry(int frames, int verts, int triangles, int triangle_offset, int vertex_offset, unsigned char* data);
+	MD3MeshGeometry(void *meta, unsigned char* data);
 	virtual ~MD3MeshGeometry();
 	virtual void Render(float time);
 	
@@ -63,7 +66,7 @@ private:
 	std::string m_sName;
 	std::vector<MD3Tag> m_Tags;
 	int m_nTags = 0;
-	int m_nBoneFrames = 0;
+	int m_nFrames = 0;
 
 	MD3AnimationInfo m_Animation;
 	float m_fAnimationTime = 0.0f;
@@ -89,7 +92,13 @@ private:
 	glm::mat4 m_matProjection;
 	glm::mat4 m_matModelView;
 
+	std::map<std::string, std::string> m_mapTextureIds;
+	std::map<std::string, CTexture*> m_mapTextures;
+
 	bool ParseAnimationScript(const std::string& name, unzFile source);
+	bool ParseSkinFile(const std::string& id, const std::string& name, unzFile source);
+	void LoadTextures(unzFile source);
+	GLuint GetTexture(const std::string& id) const;
 
 public:
 	Q3Model(LPCTSTR szFile);

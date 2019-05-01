@@ -18,6 +18,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Earth", "Earth\Earth.vcxpro
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Q3View", "Q3View\Q3View.vcxproj", "{8698AA40-F079-4913-B145-D610918CD208}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CEC7680A-512F-4BCD-8DFE-B3DF979C6D0A} = {CEC7680A-512F-4BCD-8DFE-B3DF979C6D0A}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

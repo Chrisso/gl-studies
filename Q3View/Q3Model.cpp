@@ -1,6 +1,7 @@
 #include "pch.h"
 #include <list>
 #include <sstream>
+#include <algorithm>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Q3Model.h"
@@ -15,24 +16,25 @@ namespace Detail
 	{
 		char id[4];
 		int  nVersion;
-		char szFileName[68];
-		int  nBoneFrames;
+		char szFileName[64];
+		int  nFlags;
+		int  nFrames;
 		int  nTags;
 		int  nMeshes;
 		int  nMaxTextures;
-		int  nHeaderSize;
+		int  nFrameOffset;
 		int  nTagOffset;
 		int  nMeshOffset;
 		int  nFileSize;
 	};
 
-	struct MD3BONEFRAME
+	struct MD3FRAME
 	{
 		float fMins[3];
 		float fMaxs[3];
 		float fPos[3];
 		float fScale;
-		char  cReserved[16];
+		char  szName[16];
 	};
 
 	struct MD3TAG
@@ -45,13 +47,14 @@ namespace Detail
 	struct MD3MESHHEADER
 	{
 		char id[4];
-		char szName[68];
+		char szName[64];
+		int  nFlags;
 		int  nFrames;
 		int  nTextures;
 		int  nVertices;
 		int  nTriangles;
 		int  nTriangleOffset;
-		int  nHeaderSize;
+		int  nTexSpecOffset;
 		int  nTexCoordOffset;
 		int  nVertexOffset;
 		int  nMeshSize;
@@ -70,12 +73,13 @@ namespace Detail
 // MD3MeshGeometry
 ///////////////////////////////////////////////////////////////////////////////
 
-MD3MeshGeometry::MD3MeshGeometry(
-	int frames, int verts, int triangles,
-	int triangle_offset, int vertex_offset,
-	unsigned char* data)
-	: m_nFrames(frames), m_nVertices(verts), m_nTriangles(triangles)
+MD3MeshGeometry::MD3MeshGeometry(void* meta, unsigned char* data)
 {
+	Detail::MD3MESHHEADER *pHeader = reinterpret_cast<Detail::MD3MESHHEADER*>(meta);
+	m_nFrames = pHeader->nFrames;
+	m_nVertices = pHeader->nVertices;
+	m_nTriangles = pHeader->nTriangles;
+
 	glGenVertexArrays(1, &m_nVertexArray);
 	ATLASSERT(m_nVertexArray != 0);
 
@@ -85,15 +89,15 @@ MD3MeshGeometry::MD3MeshGeometry(
 	ATLASSERT(m_nVertexBuffer != 0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_nVertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, (size_t)verts * frames * 3 * sizeof(GLfloat), nullptr, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (size_t)m_nVertices * m_nFrames * 3 * sizeof(GLfloat), nullptr, GL_STATIC_DRAW);
 
-	GLshort* pRaw = reinterpret_cast<GLshort*>(data + vertex_offset);
+	GLshort* pRaw = reinterpret_cast<GLshort*>(data + pHeader->nVertexOffset);
 	float *pVertices = reinterpret_cast<float*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-	for (int frame = 0; frame < frames; frame++)
-		for (int vert = 0; vert < verts; vert++)
+	for (int frame = 0; frame < m_nFrames; frame++)
+		for (int vert = 0; vert < m_nVertices; vert++)
 		{
-			int base_in = (frame * verts * 4) + (vert * 4);
-			int base_out = (frame * verts * 3) + (vert * 3);
+			int base_in = (frame * m_nVertices * 4) + (vert * 4);
+			int base_out = (frame * m_nVertices * 3) + (vert * 3);
 			pVertices[base_out + 0] = pRaw[base_in + 0] / 64.0f;
 			pVertices[base_out + 1] = pRaw[base_in + 1] / 64.0f;
 			pVertices[base_out + 2] = pRaw[base_in + 2] / 64.0f;
@@ -103,14 +107,29 @@ MD3MeshGeometry::MD3MeshGeometry(
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
+
+	if (pHeader->nTextures)
+	{
+		glGenBuffers(1, &m_nTexCoordBuffer);
+		ATLASSERT(m_nTexCoordBuffer != 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_nTexCoordBuffer);
+		glBufferData(GL_ARRAY_BUFFER,
+			(size_t)m_nVertices * 2 * sizeof(GLfloat),
+			data + pHeader->nTexCoordOffset,
+			GL_STATIC_DRAW);
+
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(1);
+	}
 	
 	glGenBuffers(1, &m_nIndexBuffer);
 	ATLASSERT(m_nIndexBuffer != 0);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_nIndexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-		(size_t)triangles * 3 * sizeof(GLuint),
-		data + triangle_offset,
+		(size_t)m_nTriangles * 3 * sizeof(GLuint),
+		data + pHeader->nTriangleOffset,
 		GL_STATIC_DRAW);
 
 	glBindVertexArray(0);
@@ -122,6 +141,12 @@ MD3MeshGeometry::~MD3MeshGeometry()
 	{
 		glDeleteVertexArrays(1, &m_nVertexArray);
 		m_nVertexArray = 0;
+	}
+
+	if (m_nTexCoordBuffer)
+	{
+		glDeleteBuffers(1, &m_nTexCoordBuffer);
+		m_nTexCoordBuffer = 0;
 	}
 
 	if (m_nVertexBuffer)
@@ -170,21 +195,21 @@ MD3Mesh::MD3Mesh(const std::string& name, unzFile source) : m_sName(name)
 
 		Detail::MD3HEADER* pHeader = reinterpret_cast<Detail::MD3HEADER*>(mem.data());
 		ATLENSURE(strncmp(pHeader->id, "IDP3", 4) == 0);
-		ATLENSURE(pHeader->nHeaderSize == sizeof(Detail::MD3HEADER));
+		ATLENSURE(pHeader->nFrameOffset == sizeof(Detail::MD3HEADER));
 		ATLENSURE(pHeader->nFileSize == fi.uncompressed_size);
 
 		size_t offset = sizeof(Detail::MD3HEADER);
-		for (int i = 0; i < pHeader->nBoneFrames; i++)
-			offset += sizeof(Detail::MD3BONEFRAME);
+		for (int i = 0; i < pHeader->nFrames; i++)
+			offset += sizeof(Detail::MD3FRAME);
 
 		ATLENSURE(offset == pHeader->nTagOffset);
 
 		m_nTags = pHeader->nTags;
-		m_nBoneFrames = pHeader->nBoneFrames;
-		m_Tags.resize(pHeader->nBoneFrames * (size_t)pHeader->nTags);
+		m_nFrames = pHeader->nFrames;
+		m_Tags.resize(pHeader->nFrames * (size_t)pHeader->nTags);
 
 		for (size_t i = 0; i < pHeader->nTags; i++)
-			for (size_t j = 0; j < pHeader->nBoneFrames; j++)
+			for (size_t j = 0; j < pHeader->nFrames; j++)
 			{
 				Detail::MD3TAG* pTag = reinterpret_cast<Detail::MD3TAG*>(&mem[offset]);
 
@@ -198,7 +223,7 @@ MD3Mesh::MD3Mesh(const std::string& name, unzFile source) : m_sName(name)
 				matrix[3][1] = pTag->fPos[1];
 				matrix[3][2] = pTag->fPos[2];
 
-				m_Tags[(i * pHeader->nBoneFrames) + j] = MD3Tag(pTag->szTagName, matrix);
+				m_Tags[(i * pHeader->nFrames) + j] = MD3Tag(pTag->szTagName, matrix);
 
 				offset += sizeof(Detail::MD3TAG);
 			}
@@ -209,14 +234,7 @@ MD3Mesh::MD3Mesh(const std::string& name, unzFile source) : m_sName(name)
 		{
 			Detail::MD3MESHHEADER* pMeshHeader = reinterpret_cast<Detail::MD3MESHHEADER*>(&mem[offset]);
 			ATLENSURE(strncmp(pMeshHeader->id, "IDP3", 4) == 0);
-			AddChild(new MD3MeshGeometry(
-				pMeshHeader->nFrames,
-				pMeshHeader->nVertices,
-				pMeshHeader->nTriangles,
-				pMeshHeader->nTriangleOffset,
-				pMeshHeader->nVertexOffset,
-				&mem[offset]
-			));
+			AddChild(new MD3MeshGeometry(reinterpret_cast<void*>(pMeshHeader), &mem[offset]));
 			offset += pMeshHeader->nMeshSize;
 		}
 
@@ -312,6 +330,20 @@ Q3Model::Q3Model(LPCTSTR szFile)
 			ATLTRACE(_T("Model path: %s\n"), (LPCTSTR)CA2CT(szModelPath));
 
 			strcpy_s(szEntry, szModelPath);
+			strcat_s(szEntry, "head_default.skin");
+			ParseSkinFile("head", szEntry, zip);
+
+			strcpy_s(szEntry, szModelPath);
+			strcat_s(szEntry, "upper_default.skin");
+			ParseSkinFile("upper", szEntry, zip);
+
+			strcpy_s(szEntry, szModelPath);
+			strcat_s(szEntry, "lower_default.skin");
+			ParseSkinFile("lower", szEntry, zip);
+
+			LoadTextures(zip);
+
+			strcpy_s(szEntry, szModelPath);
 			strcat_s(szEntry, "head.md3");
 			m_pHead.reset(new MD3Mesh(szEntry, zip));
 
@@ -350,6 +382,9 @@ Q3Model::Q3Model(LPCTSTR szFile)
 Q3Model::~Q3Model()
 {
 	ATLTRACE(_T("Model cleanup.\n"));
+
+	for (auto iter = m_mapTextures.begin(); iter != m_mapTextures.end(); iter++)
+		delete iter->second;
 }
 
 bool Q3Model::ParseAnimationScript(const std::string& name, unzFile source)
@@ -407,6 +442,93 @@ bool Q3Model::ParseAnimationScript(const std::string& name, unzFile source)
 	return true;
 }
 
+bool Q3Model::ParseSkinFile(const std::string& id, const std::string& name, unzFile source)
+{
+	USES_CONVERSION;
+	unz_file_info fi;
+
+	if (unzLocateFile(source, name.c_str(), 2) != UNZ_OK)
+	{
+		ATLTRACE(_T("File not found: \"%s\".\n"), (LPCTSTR)CA2CT(name.c_str()));
+		return false;
+	}
+
+	ATLTRACE(_T("Loading \"%s\"...\n"), (LPCTSTR)CA2CT(name.c_str()));
+	ATLENSURE(unzGetCurrentFileInfo(source, &fi, nullptr, 0, nullptr, 0, nullptr, 0) == UNZ_OK);
+
+	std::vector<char> mem(fi.uncompressed_size);
+	ATLENSURE(unzOpenCurrentFile(source) == UNZ_OK);
+	ATLENSURE(unzReadCurrentFile(source, mem.data(), fi.uncompressed_size) == fi.uncompressed_size);
+	ATLENSURE(unzCloseCurrentFile(source) == UNZ_OK);
+
+	std::string line;
+	std::string cfg(mem.begin(), mem.end());
+	std::istringstream stream(cfg);
+
+	while (std::getline(stream, line))
+	{
+		line.erase(std::find_if(line.rbegin(), line.rend(), [](int ch) { 
+			return !std::isspace(ch);
+		}).base(), line.end());
+		
+		size_t sep = line.find(',');
+		if (sep != std::string::npos && sep < line.length() - 1)
+		{
+			m_mapTextureIds[id] = line.substr(sep + 1);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void Q3Model::LoadTextures(unzFile source)
+{
+	USES_CONVERSION;
+	unz_file_info fi;
+
+	for (auto iter = m_mapTextureIds.begin(); iter != m_mapTextureIds.end(); iter++)
+	{
+		if (m_mapTextures.find(iter->second) == m_mapTextures.end())
+		{
+			CTexture* pTexture = new CTexture();
+			
+			if (unzLocateFile(source, iter->second.c_str(), 2) == UNZ_OK)
+			{
+				ATLTRACE(_T("Loading texture \"%s\"...\n"), (LPCTSTR)CA2CT(iter->second.c_str()));
+				ATLENSURE(unzGetCurrentFileInfo(source, &fi, nullptr, 0, nullptr, 0, nullptr, 0) == UNZ_OK);
+
+				std::vector<unsigned char> mem(fi.uncompressed_size);
+				ATLENSURE(unzOpenCurrentFile(source) == UNZ_OK);
+				ATLENSURE(unzReadCurrentFile(source, mem.data(), fi.uncompressed_size) == fi.uncompressed_size);
+				ATLENSURE(unzCloseCurrentFile(source) == UNZ_OK);
+
+				pTexture->Load(mem.data(), fi.uncompressed_size, true);
+			}
+			else
+			{
+				ATLTRACE(_T("File not found: \"%s\".\n"), (LPCTSTR)CA2CT(iter->second.c_str()));
+			}
+
+			m_mapTextures[iter->second] = pTexture;
+		}
+	}
+}
+
+GLuint Q3Model::GetTexture(const std::string& id) const
+{
+	auto name = m_mapTextureIds.find(id);
+	if (name != m_mapTextureIds.end())
+	{
+		auto texture = m_mapTextures.find(name->second);
+		if (texture != m_mapTextures.end())
+		{
+			return *(texture->second);
+		}
+	}
+	return 0; // not found
+}
+
 void Q3Model::SetAnimation(int id)
 {
 	ATLASSERT(id >= 0 && id < Q3_NUM_ANIMATIONS);
@@ -431,7 +553,7 @@ void Q3Model::SetAnimation(int id)
 void Q3Model::Render(float time)
 {
 	glUseProgram(m_Shader);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // wireframe
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // wireframe
 
 	m_matModelView = glm::rotate(
 		m_matModelView,
@@ -457,7 +579,9 @@ void Q3Model::Render(float time)
 
 	if (m_pLower)
 	{
+		glBindTexture(GL_TEXTURE_2D, GetTexture("lower"));
 		m_pLower->Render(time);
+
 		transform = transform * m_pLower->Transform("tag_torso");
 		glUniformMatrix4fv(
 			glGetUniformLocation(m_Shader, "modelview"),
@@ -467,7 +591,9 @@ void Q3Model::Render(float time)
 
 	if (m_pUpper)
 	{
+		glBindTexture(GL_TEXTURE_2D, GetTexture("upper"));
 		m_pUpper->Render(time);
+
 		transform = transform * m_pUpper->Transform("tag_head");
 		glUniformMatrix4fv(
 			glGetUniformLocation(m_Shader, "modelview"),
@@ -477,10 +603,12 @@ void Q3Model::Render(float time)
 
 	if (m_pHead)
 	{
+		glBindTexture(GL_TEXTURE_2D, GetTexture("head"));
 		m_pHead->Render(time);
 	}
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glBindTexture(GL_TEXTURE_2D, 0);
 	glUseProgram(0);
 }
 

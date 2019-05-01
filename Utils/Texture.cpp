@@ -5,6 +5,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_JPEG
+#define STBI_ONLY_TGA
 #include <stb_image.h>
 
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
@@ -95,6 +96,25 @@ bool CTexture::Load(HINSTANCE hInst, LPCTSTR szResType, int nResId, bool bHiqual
 	GLubyte *pData = stbi_load_from_memory(
 		reinterpret_cast<const stbi_uc*>(pResource),
 		::SizeofResource(hInst, hResInfo),
+		&m_nWidth, &m_nHeight, &nChannels, 4);
+
+	if (!pData)
+	{
+		ATLTRACE(_T("Could not decode image resource!\n"));
+		return false;
+	}
+
+	LoadInternal(pData, bHiqual);
+
+	stbi_image_free(pData);
+	return true;
+}
+
+bool CTexture::Load(GLubyte *pMemory, size_t nLength, bool bHiqual)
+{
+	int nChannels = 0;
+	GLubyte* pData = stbi_load_from_memory(
+		pMemory, static_cast<int>(nLength),
 		&m_nWidth, &m_nHeight, &nChannels, 4);
 
 	if (!pData)
