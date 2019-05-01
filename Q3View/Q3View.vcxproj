@@ -97,7 +97,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\Libraries\glew\lib\$(Configuration)\$(Platform);$(SolutionDir)..\Libraries\freetype\objs\$(Platform)\$(Configuration) Static\;$(SolutionDir)..\Libraries\zlib\contrib\vstudio\vc14\$(Platform)\ZlibStat$(Configuration);$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\Libraries\glew\lib\$(Configuration)\$(Platform);$(SolutionDir)..\Libraries\freetype\objs\$(Platform)\$(Configuration) Static\;$(SolutionDir)..\Libraries\zlib\contrib\vstudio\vc14\$(PlatformTarget)\ZlibStat$(Configuration);$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;glu32.lib;freetype.lib;zlibstat.lib;utils.lib;glew32sd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
@@ -119,7 +119,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\Libraries\glew\lib\$(Configuration)\$(Platform);$(SolutionDir)..\Libraries\freetype\objs\$(Platform)\$(Configuration) Static\;$(SolutionDir)..\Libraries\zlib\contrib\vstudio\vc14\$(Platform)\ZlibStat$(Configuration);$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\Libraries\glew\lib\$(Configuration)\$(Platform);$(SolutionDir)..\Libraries\freetype\objs\$(Platform)\$(Configuration) Static\;$(SolutionDir)..\Libraries\zlib\contrib\vstudio\vc14\$(PlatformTarget)\ZlibStat$(Configuration);$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;glu32.lib;freetype.lib;zlibstat.lib;utils.lib;glew32sd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
@@ -145,8 +145,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\Libraries\glew\lib\$(Configuration)\$(Platform);$(SolutionDir)..\Libraries\freetype\objs\$(Platform)\$(Configuration) Static\;$(SolutionDir)..\Libraries\zlib\contrib\vstudio\vc14\$(Platform)\ZlibStat$(Configuration);$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\Libraries\glew\lib\$(Configuration)\$(Platform);$(SolutionDir)..\Libraries\freetype\objs\$(Platform)\$(Configuration) Static\;$(SolutionDir)..\Libraries\zlib\contrib\vstudio\vc14\$(PlatformTarget)\ZlibStat$(Configuration)WithoutAsm;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;glu32.lib;freetype.lib;zlibstat.lib;utils.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Libraries\wtl\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -171,7 +172,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\Libraries\glew\lib\$(Configuration)\$(Platform);$(SolutionDir)..\Libraries\freetype\objs\$(Platform)\$(Configuration) Static\;$(SolutionDir)..\Libraries\zlib\contrib\vstudio\vc14\$(Platform)\ZlibStat$(Configuration);$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\Libraries\glew\lib\$(Configuration)\$(Platform);$(SolutionDir)..\Libraries\freetype\objs\$(Platform)\$(Configuration) Static\;$(SolutionDir)..\Libraries\zlib\contrib\vstudio\vc14\$(PlatformTarget)\ZlibStat$(Configuration);$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;glu32.lib;freetype.lib;zlibstat.lib;utils.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>

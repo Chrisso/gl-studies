@@ -217,7 +217,11 @@ bool CShaderProgram::Load(LPCTSTR szFile, bool bDeleteOnError)
 		if (::ReadFile(hFile, &nFormat, sizeof(GLenum), &dwBytesRead, NULL) &&
 			dwBytesRead == sizeof(GLenum))
 		{
+#ifdef _WIN64
 			std::vector<GLbyte> pData(nSize.QuadPart - sizeof(GLenum));
+#else
+			std::vector<GLbyte> pData(nSize.LowPart - sizeof(GLenum));
+#endif
 			if (::ReadFile(hFile, pData.data(), (DWORD)pData.size(), &dwBytesRead, NULL) &&
 				dwBytesRead == pData.size())
 			{

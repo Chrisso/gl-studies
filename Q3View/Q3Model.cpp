@@ -208,8 +208,8 @@ MD3Mesh::MD3Mesh(const std::string& name, unzFile source) : m_sName(name)
 		m_nFrames = pHeader->nFrames;
 		m_Tags.resize(pHeader->nFrames * (size_t)pHeader->nTags);
 
-		for (size_t i = 0; i < pHeader->nTags; i++)
-			for (size_t j = 0; j < pHeader->nFrames; j++)
+		for (int i = 0; i < pHeader->nTags; i++)
+			for (int j = 0; j < pHeader->nFrames; j++)
 			{
 				Detail::MD3TAG* pTag = reinterpret_cast<Detail::MD3TAG*>(&mem[offset]);
 
@@ -230,7 +230,7 @@ MD3Mesh::MD3Mesh(const std::string& name, unzFile source) : m_sName(name)
 
 		ATLENSURE(offset == pHeader->nMeshOffset);
 
-		for (size_t i = 0; i < pHeader->nMeshes; i++)
+		for (int i = 0; i < pHeader->nMeshes; i++)
 		{
 			Detail::MD3MESHHEADER* pMeshHeader = reinterpret_cast<Detail::MD3MESHHEADER*>(&mem[offset]);
 			ATLENSURE(strncmp(pMeshHeader->id, "IDP3", 4) == 0);
