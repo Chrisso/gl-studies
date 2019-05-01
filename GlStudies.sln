@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27428.2043
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TemplateGlExt", "TemplateGlExt\TemplateGlExt.vcxproj", "{D3A4F7AC-0057-4DC4-BAF2-9BB6EABD31C3}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -13,6 +13,11 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NuklearGl", "NuklearGl\NuklearGl.vcxproj", "{B23BF2B2-FE6A-4C25-B068-293234737011}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Earth", "Earth\Earth.vcxproj", "{374D756E-2003-4023-81FF-9FE80B0BDED4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CEC7680A-512F-4BCD-8DFE-B3DF979C6D0A} = {CEC7680A-512F-4BCD-8DFE-B3DF979C6D0A}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Q3View", "Q3View\Q3View.vcxproj", "{8698AA40-F079-4913-B145-D610918CD208}"
 	ProjectSection(ProjectDependencies) = postProject
 		{CEC7680A-512F-4BCD-8DFE-B3DF979C6D0A} = {CEC7680A-512F-4BCD-8DFE-B3DF979C6D0A}
 	EndProjectSection
@@ -57,6 +62,14 @@ Global
 		{374D756E-2003-4023-81FF-9FE80B0BDED4}.Release|x64.Build.0 = Release|x64
 		{374D756E-2003-4023-81FF-9FE80B0BDED4}.Release|x86.ActiveCfg = Release|Win32
 		{374D756E-2003-4023-81FF-9FE80B0BDED4}.Release|x86.Build.0 = Release|Win32
+		{8698AA40-F079-4913-B145-D610918CD208}.Debug|x64.ActiveCfg = Debug|x64
+		{8698AA40-F079-4913-B145-D610918CD208}.Debug|x64.Build.0 = Debug|x64
+		{8698AA40-F079-4913-B145-D610918CD208}.Debug|x86.ActiveCfg = Debug|Win32
+		{8698AA40-F079-4913-B145-D610918CD208}.Debug|x86.Build.0 = Debug|Win32
+		{8698AA40-F079-4913-B145-D610918CD208}.Release|x64.ActiveCfg = Release|x64
+		{8698AA40-F079-4913-B145-D610918CD208}.Release|x64.Build.0 = Release|x64
+		{8698AA40-F079-4913-B145-D610918CD208}.Release|x86.ActiveCfg = Release|Win32
+		{8698AA40-F079-4913-B145-D610918CD208}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
