@@ -94,7 +94,7 @@ int CGlMainWindow::OnDestroy()
 LRESULT CGlMainWindow::OnBenchmark(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	CString fmt;
-	fmt.Format(_T("%d FPS"), lParam);
+	fmt.Format(_T("%d FPS"), static_cast<int>(lParam));
 	m_StatusBar.SetPaneText(ID_INFO_PANE, fmt);
 	return 0;
 }
@@ -119,7 +119,7 @@ void CGlMainWindow::OnFileOpen(UINT uNotifyCode, int nID, HWND hWnd)
 		szName.LoadString(IDR_MAINFRAME);
 
 		CString szTitle;
-		szTitle.Format(_T("%s - %s"), szName, dlg.m_szFileTitle);
+		szTitle.Format(_T("%s - %s"), (LPCTSTR)szName, dlg.m_szFileTitle);
 
 		SetWindowText(szTitle);
 	}
@@ -213,11 +213,11 @@ bool CGlMainWindow::InitGlew()
 
 			::ReleaseDC(hWnd, hDC);
 		}
+
+		::DestroyWindow(hWnd);
 	}
 
-	::DestroyWindow(hWnd);
 	::UnregisterClass(OGL_HELPER_WINDOW, _Module.GetModuleInstance());
-
 	return bResult;
 }
 

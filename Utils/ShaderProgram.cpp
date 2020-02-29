@@ -75,7 +75,7 @@ bool CShader::Create(GLenum nType, HINSTANCE hInst, PCTSTR szResType, int nResId
 		glGetShaderiv(m_nShader, GL_INFO_LOG_LENGTH, &nStatus);
 		if (nStatus > 1)
 		{
-			std::vector<GLchar> info(nStatus + 1);
+			std::vector<GLchar> info((size_t)nStatus + 1);
 			glGetShaderInfoLog(m_nShader, (GLsizei)info.size(), NULL, info.data());
 			m_strInfoLog = CString(info.data()).Trim();
 			ATLTRACE(_T("\n%s\n"), (LPCTSTR)m_strInfoLog);
@@ -147,7 +147,7 @@ bool CShaderProgram::Link()
 
 		if (nStatus > 1)
 		{
-			std::vector<GLchar> info(nStatus + 1);
+			std::vector<GLchar> info((size_t)nStatus + 1);
 			glGetShaderInfoLog(m_nShaderProgram, (GLsizei)info.size(), NULL, info.data());
 			m_strInfoLog = CString(info.data()).Trim();
 			ATLTRACE(_T("\n%s\n"), (LPCTSTR)m_strInfoLog);

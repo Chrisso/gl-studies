@@ -93,7 +93,7 @@ int CGlMainWindow::OnDestroy()
 LRESULT CGlMainWindow::OnBenchmark(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	CString fmt;
-	fmt.Format(_T("%d FPS"), lParam);
+	fmt.Format(_T("%d FPS"), static_cast<int>(lParam));
 	m_StatusBar.SetPaneText(ID_INFO_PANE, fmt);
 	return 0;
 }
@@ -178,11 +178,11 @@ bool CGlMainWindow::InitGlew()
 
 			::ReleaseDC(hWnd, hDC);
 		}
+
+		::DestroyWindow(hWnd);
 	}
 
-	::DestroyWindow(hWnd);
 	::UnregisterClass(OGL_HELPER_WINDOW, _Module.GetModuleInstance());
-
 	return bResult;
 }
 

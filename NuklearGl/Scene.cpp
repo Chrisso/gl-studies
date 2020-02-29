@@ -27,8 +27,10 @@ static const nk_draw_vertex_layout_element g_vertex_layout[] = {
 // Construction/ Destruction
 /////////////////////////////////////////////////////////////////
 
-CScene::CScene()
+CScene::CScene() : m_vecSize()
 {
+	m_matNuklear = glm::mat4(); // identity
+
 	glClearDepth(1.0f);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);

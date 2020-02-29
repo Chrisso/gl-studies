@@ -223,7 +223,7 @@ MD3Mesh::MD3Mesh(const std::string& name, unzFile source) : m_sName(name)
 				matrix[3][1] = pTag->fPos[1];
 				matrix[3][2] = pTag->fPos[2];
 
-				m_Tags[(i * pHeader->nFrames) + j] = MD3Tag(pTag->szTagName, matrix);
+				m_Tags[((size_t)i * pHeader->nFrames) + j] = MD3Tag(pTag->szTagName, matrix);
 
 				offset += sizeof(Detail::MD3TAG);
 			}

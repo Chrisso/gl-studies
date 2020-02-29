@@ -11,7 +11,7 @@
 
 CScene::CScene()
 {
-
+	m_matTransformation = glm::mat4(); // identity
 }
 
 CScene::~CScene()

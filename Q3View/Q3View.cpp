@@ -17,7 +17,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
 	ATLTRACE(_T("Initializing application...\n"));
-	::CoInitialize(NULL);
+	ATLENSURE_SUCCEEDED(::CoInitialize(NULL));
 	::AtlInitCommonControls(ICC_COOL_CLASSES | ICC_BAR_CLASSES | ICC_USEREX_CLASSES);
 	_Module.Init(NULL, hInstance);
 

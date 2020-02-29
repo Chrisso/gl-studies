@@ -12,6 +12,7 @@
 
 CScene::CScene()
 {
+	m_matMVP = glm::mat4(); // identity
 }
 
 CScene::~CScene()
@@ -135,6 +136,7 @@ void CScene::Resize(int width, int height)
 
 CHud::CHud()
 {
+	m_matMVP = glm::mat4(); // identity
 }
 
 CHud::~CHud()
