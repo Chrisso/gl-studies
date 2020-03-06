@@ -6,17 +6,61 @@
 #include "Scene.h"
 
 /////////////////////////////////////////////////////////////////
-// Construction/ Destruction
+// CForeground Implementation
 /////////////////////////////////////////////////////////////////
 
-CScene::CScene()
+CForeground::CForeground() : m_matTransformation(1.0f)
+{
+}
+
+CForeground::~CForeground()
+{
+}
+
+void CForeground::Resize(int width, int height)
+{
+	if (height == 0) height = 1; // avoid division by zero
+
+	glm::mat4 projection = glm::perspective(
+		glm::radians(45.0f),
+		(float)width / (float)height,
+		1.0f, 8.0f);
+
+	glm::mat4 modelview = glm::lookAt(
+		glm::vec3(0.0f, 1.0f, 3.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f)
+	);
+
+	m_matTransformation = projection * modelview;
+
+	CSceneGraphNode::Handle(EVT_MVP_UPDATE, 0, &m_matTransformation);
+}
+
+void CForeground::Render(float time)
+{
+	m_matTransformation = glm::rotate(
+		m_matTransformation,
+		glm::radians(-time / 50.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f)
+	);
+
+	CSceneGraphNode::Handle(EVT_MVP_UPDATE, 0, &m_matTransformation);
+	CSceneGraphNode::Render(time);
+}
+
+/////////////////////////////////////////////////////////////////
+// CEarthBall Implementation
+/////////////////////////////////////////////////////////////////
+
+CEarthBall::CEarthBall()
 {
 	m_matTransformation = glm::mat4(); // identity
 }
 
-CScene::~CScene()
+CEarthBall::~CEarthBall()
 {
-	ATLTRACE(_T("Cleaning up...\n"));
+	ATLTRACE(_T("Cleaning up earth...\n"));
 
 	if (m_nVertexArray)
 	{
@@ -30,10 +74,6 @@ CScene::~CScene()
 		m_nVertexBuffer = 0;
 	}
 }
-
-/////////////////////////////////////////////////////////////////
-// Method Implementation
-/////////////////////////////////////////////////////////////////
 
 namespace detail
 {
@@ -110,7 +150,7 @@ namespace detail
 	#define SPHERE_TRIANGULATION_DEPTH 5
 #endif
 
-bool CScene::Create()
+bool CEarthBall::Create()
 {
 	if (!m_ShaderProgram.CreateSimple(
 		_Module.GetResourceInstance(),
@@ -199,42 +239,24 @@ bool CScene::Create()
 	return true;
 }
 
-void CScene::ResourceReady(int id, void* param)
+void CEarthBall::Handle(int evt, int flags, void* param)
 {
-	if (id == IDR_IMAGE_BLUE_MARBLE)
+	if (evt == EVT_MVP_UPDATE)
+	{
+		m_matTransformation = *reinterpret_cast<glm::mat4*>(param);
+		return;
+	}
+
+	if ((evt == EVT_RESOURCE_READY) && (flags == IDR_IMAGE_BLUE_MARBLE))
 	{
 		ATLTRACE(_T("Update blue marble from %s\n"), (LPCTSTR)param);
 		m_texEarth.Load((LPCTSTR)param, true);
 	}
 }
 
-void CScene::Resize(int width, int height)
-{
-	if (height == 0) height = 1; // avoid division by zero
-
-	glm::mat4 projection = glm::perspective(
-		glm::radians(45.0f),
-		(float)width / (float)height,
-		1.0f, 8.0f);
-
-	glm::mat4 modelview = glm::lookAt(
-		glm::vec3(0.0f, 1.0f, 3.0f),
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f)
-	);
-
-	m_matTransformation = projection * modelview;
-}
-
-void CScene::Render(float time)
+void CEarthBall::Render(float time)
 {
 	glUseProgram(m_ShaderProgram);
-
-	m_matTransformation = glm::rotate(
-		m_matTransformation,
-		glm::radians(-time / 50.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f)
-	);
 
 	glUniformMatrix4fv(
 		glGetUniformLocation(m_ShaderProgram, "transformation"),
@@ -250,6 +272,101 @@ void CScene::Render(float time)
 		glBindVertexArray(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+
+	glUseProgram(0);
+}
+
+/////////////////////////////////////////////////////////////////
+// CParticles Implementation
+/////////////////////////////////////////////////////////////////
+
+CParticles::CParticles() : m_matTransformation(1.0f)
+{
+}
+
+CParticles::~CParticles()
+{
+	ATLTRACE(_T("Cleaning up particles...\n"));
+
+	if (m_nVertexArray)
+	{
+		glDeleteVertexArrays(1, &m_nVertexArray);
+		m_nVertexArray = 0;
+	}
+
+	if (m_nVertexBuffer)
+	{
+		glDeleteBuffers(1, &m_nVertexBuffer);
+		m_nVertexBuffer = 0;
+	}
+}
+
+bool CParticles::Create()
+{
+	ATLTRACE(_T("Initializing particles...\n"));
+
+	if (!m_ShaderProgram.CreateSimple(
+		_Module.GetResourceInstance(),
+		_T("GLSL_SHADER"),
+		IDR_GLSL_VERTEX_PARTICLES,
+		IDR_GLSL_FRAGMENT_PARTICLES))
+		return false;
+
+	glGenVertexArrays(1, &m_nVertexArray);
+	if (!m_nVertexArray) return false;
+	glBindVertexArray(m_nVertexArray);
+
+	glGenBuffers(1, &m_nVertexBuffer);
+	if (!m_nVertexBuffer) return false;
+	glBindBuffer(GL_ARRAY_BUFFER, m_nVertexBuffer);
+
+	m_numVertices = 180;
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * m_numVertices, NULL, GL_STATIC_DRAW);
+	float* pGeometry = reinterpret_cast<float*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+
+	for (GLsizei i = 0; i < m_numVertices; i++)
+	{
+		double phi = M_PI * 2.0 * (i / (double)m_numVertices);
+		pGeometry[i*3 + 0] = (float)(1.01 * cos(phi));
+		pGeometry[i*3 + 1] = 0.0f;
+		pGeometry[i*3 + 2] = (float)(1.01 * sin(phi));
+	}
+
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	return true;
+}
+
+void CParticles::Handle(int evt, int flags, void* param)
+{
+	if (evt == EVT_MVP_UPDATE)
+	{
+		m_matTransformation = *reinterpret_cast<glm::mat4*>(param);
+	}
+}
+
+void CParticles::Render(float time)
+{
+	glUseProgram(m_ShaderProgram);
+
+	glUniformMatrix4fv(
+		glGetUniformLocation(m_ShaderProgram, "transformation"),
+		1, GL_FALSE, glm::value_ptr(m_matTransformation)
+	);
+
+	if (m_nVertexArray && m_nVertexBuffer)
+	{
+		glBindVertexArray(m_nVertexArray);
+		glDrawArrays(GL_POINTS, 0, m_numVertices);
+		glBindVertexArray(0);
 	}
 
 	glUseProgram(0);

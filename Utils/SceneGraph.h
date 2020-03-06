@@ -22,10 +22,10 @@ public:
 		return true;
 	}
 
-	virtual void ResourceReady(int id, void* param)
+	virtual void Handle(int evt, int flags, void* param)
 	{
 		for (CSceneGraphNode* child : m_pChildren)
-			child->ResourceReady(id, param);
+			child->Handle(evt, flags, param);
 	}
 
 	virtual void Resize(int width, int height)

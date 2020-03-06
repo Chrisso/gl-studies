@@ -93,5 +93,11 @@
     <None Include="Resources\vertex-passthrough.glsl">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="Resources\fragment-particles.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\vertex-particles.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

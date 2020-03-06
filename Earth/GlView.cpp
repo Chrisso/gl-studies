@@ -229,13 +229,25 @@ int CGlView::OnCreate(CREATESTRUCT *lpcs)
 	}
 	m_pScene->AddChild(pBackground);
 
-	CScene *pMainScene = new CScene();
-	if (!pMainScene->Create())
+	CSceneGraphNode *pForeground = new CForeground();
+	ATLENSURE(pForeground->Create());
+	m_pScene->AddChild(pForeground);
+
+	CSceneGraphNode *pEarth = new CEarthBall();
+	if (!pEarth->Create())
 	{
 		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
 		return -1;
 	}
-	m_pScene->AddChild(pMainScene);
+	pForeground->AddChild(pEarth);
+
+	CSceneGraphNode* pParticles = new CParticles();
+	if (!pParticles->Create())
+	{
+		::AtlMessageBox(m_hWnd, IDS_ERR_OPENGL, IDR_MAINFRAME);
+		return -1;
+	}
+	pForeground->AddChild(pParticles);
 
 	if (curl_global_init(CURL_GLOBAL_ALL) == CURLE_OK)
 	{
@@ -287,7 +299,7 @@ int CGlView::OnSize(UINT nType, CSize size)
 
 LRESULT CGlView::OnResourceReady(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	m_pScene->ResourceReady((int)wParam, (void*)lParam);
+	m_pScene->Handle(EVT_RESOURCE_READY, (int)wParam, (void*)lParam);
 	return 0;
 }
 

@@ -31,14 +31,17 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
 // GLSL_SHADER
 //
 
-IDR_GLSL_FRAGMENT_EARTH GLSL_SHADER             "Resources\\fragment-earth.glsl"
-
 IDR_GLSL_VERTEX_EARTH  GLSL_SHADER             "Resources\\vertex-earth.glsl"
+
+IDR_GLSL_FRAGMENT_EARTH GLSL_SHADER             "Resources\\fragment-earth.glsl"
 
 IDR_GLSL_VERTEX_PASSTHROUGH GLSL_SHADER             "Resources\\vertex-passthrough.glsl"
 
 IDR_GLSL_FRAGMENT_TEXTURED GLSL_SHADER             "Resources\\fragment-textured.glsl"
 
+IDR_GLSL_VERTEX_PARTICLES GLSL_SHADER             "Resources\\vertex-particles.glsl"
+
+IDR_GLSL_FRAGMENT_PARTICLES GLSL_SHADER             "Resources\\fragment-particles.glsl"
 
 /////////////////////////////////////////////////////////////////////////////
 //
