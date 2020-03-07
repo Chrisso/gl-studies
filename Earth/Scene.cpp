@@ -321,19 +321,40 @@ bool CParticles::Create()
 	if (!m_nVertexBuffer) return false;
 	glBindBuffer(GL_ARRAY_BUFFER, m_nVertexBuffer);
 
-	m_numVertices = 180;
+	std::vector<float> vertices;
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * m_numVertices, NULL, GL_STATIC_DRAW);
-	float* pGeometry = reinterpret_cast<float*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-
-	for (GLsizei i = 0; i < m_numVertices; i++)
+	// Equator
+	for (GLsizei i = 0; i < 180; i++)
 	{
-		double phi = M_PI * 2.0 * (i / (double)m_numVertices);
-		pGeometry[i*3 + 0] = (float)(1.01 * cos(phi));
-		pGeometry[i*3 + 1] = 0.0f;
-		pGeometry[i*3 + 2] = (float)(1.01 * sin(phi));
+		double phi = M_PI * 2.0 * (i / 180.0);
+		vertices.push_back((float)(1.01 * cos(phi)));
+		vertices.push_back(0.0f);
+		vertices.push_back((float)(1.01 * sin(phi)));
 	}
 
+	// Prime meridian
+	for (GLsizei i = 0; i < 180; i++)
+	{
+		double phi = M_PI * 2.0 * (i / 180.0);
+		vertices.push_back(0.0f);
+		vertices.push_back((float)(1.01 * cos(phi)));
+		vertices.push_back((float)(1.01 * sin(phi)));
+		
+	}
+
+	// another helper
+	/*for (GLsizei i = 0; i < 180; i++)
+	{
+		double phi = M_PI * 2.0 * (i / 180.0);
+		vertices.push_back((float)(1.01 * cos(phi)));
+		vertices.push_back((float)(1.01 * sin(phi)));
+		vertices.push_back(0.0f);
+	}*/
+	
+	m_numVertices = (GLsizei)vertices.size() / 3;
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * m_numVertices, NULL, GL_STATIC_DRAW);
+	float* pGeometry = reinterpret_cast<float*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+	memcpy(pGeometry, vertices.data(), m_numVertices * 3 * sizeof(float));
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
