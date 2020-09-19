@@ -139,7 +139,7 @@ int CGlView::OnCreate(CREATESTRUCT *lpcs)
 	return 0;
 }
 
-int CGlView::OnDestroy()
+void CGlView::OnDestroy()
 {
 	ATLTRACE(_T("OnDestroy\n"));
 
@@ -161,11 +161,9 @@ int CGlView::OnDestroy()
 		ReleaseDC(m_hDC);
 		m_hDC = NULL;
 	}
-
-	return 0;
 }
 
-int CGlView::OnSize(UINT nType, CSize size)
+void CGlView::OnSize(UINT nType, CSize size)
 {
 	if (m_pModel)
 	{
@@ -174,7 +172,6 @@ int CGlView::OnSize(UINT nType, CSize size)
 	}
 
 	SetMsgHandled(FALSE);
-	return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

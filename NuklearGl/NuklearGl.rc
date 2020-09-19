@@ -57,11 +57,11 @@ IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "E&xit",                       IDM_EXIT
+        MENUITEM "E&xit",                       ID_APP_EXIT
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&About ...",                  IDM_ABOUT
+        MENUITEM "&About ...",                  ID_APP_ABOUT
     END
 END
 

@@ -16,8 +16,8 @@ public:
 	void Render(float time);
 
 	int OnCreate(CREATESTRUCT *lpcs);
-	int OnDestroy();
-	int OnSize(UINT nType, CSize size);
+	void OnDestroy();
+	void OnSize(UINT nType, CSize size);
 
 	void OnDebugMessage(
 		GLenum source, GLenum type, GLuint id,
@@ -53,12 +53,7 @@ public:
 		if (m_pScene) m_pScene->Key(nChar, nFlags, false);
 	}
 
-	BOOL PreTranslateMessage(MSG*)
-	{
-		return FALSE;
-	}
-
-	DECLARE_WND_CLASS_EX(NULL, CS_OWNDC, 0)
+	DECLARE_WND_CLASS_EX(NULL, CS_OWNDC, COLOR_BACKGROUND)
 
 	BEGIN_MSG_MAP_EX(CGlView)
 		MSG_WM_CREATE(OnCreate)

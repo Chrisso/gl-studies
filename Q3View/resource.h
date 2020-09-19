@@ -2,10 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by Q3View.rc
 //
-#define IDS_APP_TITLE                   102
-#define IDM_ABOUT                       103
-#define IDM_EXIT                        104
-#define IDI_SMALL                       105
+#define IDI_SMALL                       101
 #define IDR_MAINFRAME                   128
 #define ID_INFO_PANE                    129
 #define IDS_APP_INFO                    130
@@ -44,9 +41,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        133
+#define _APS_NEXT_RESOURCE_VALUE        134
 #define _APS_NEXT_COMMAND_VALUE         32797
 #define _APS_NEXT_CONTROL_VALUE         1000
-#define _APS_NEXT_SYMED_VALUE           106
+#define _APS_NEXT_SYMED_VALUE           102
 #endif
 #endif

@@ -3,8 +3,6 @@
 // Used by TemplateGlExt.rc
 //
 #define IDI_SMALL                       101
-#define IDM_ABOUT                       102
-#define IDM_EXIT                        103
 #define IDR_MAINFRAME                   128
 #define ID_INFO_PANE                    129
 #define IDS_APP_INFO                    130
@@ -23,6 +21,6 @@
 #define _APS_NEXT_RESOURCE_VALUE        137
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1000
-#define _APS_NEXT_SYMED_VALUE           104
+#define _APS_NEXT_SYMED_VALUE           102
 #endif
 #endif

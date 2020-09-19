@@ -20,10 +20,10 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// German (Germany) resources
+// English (United States) resources
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
-LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 
 /////////////////////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
 // GLSL_SHADER
 //
 
-IDR_GLSL_VERTEX_EARTH  GLSL_SHADER             "Resources\\vertex-earth.glsl"
+IDR_GLSL_VERTEX_EARTH   GLSL_SHADER             "Resources\\vertex-earth.glsl"
 
 IDR_GLSL_FRAGMENT_EARTH GLSL_SHADER             "Resources\\fragment-earth.glsl"
 
@@ -43,6 +43,7 @@ IDR_GLSL_VERTEX_PARTICLES GLSL_SHADER             "Resources\\vertex-particles.g
 
 IDR_GLSL_FRAGMENT_PARTICLES GLSL_SHADER             "Resources\\fragment-particles.glsl"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // IMAGE_JPEG
@@ -52,16 +53,6 @@ IDR_IMAGE_BLUE_MARBLE   IMAGE_JPEG              "Resources\\land_shallow_topo_20
 
 IDR_IMAGE_SPACE         IMAGE_JPEG              "Resources\\2k_stars.jpg"
 
-#endif    // German (Germany) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -84,11 +75,11 @@ IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "E&xit",                       IDM_EXIT
+        MENUITEM "E&xit",                       ID_APP_EXIT
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&About ...",                  IDM_ABOUT
+        MENUITEM "&About ...",                  ID_APP_ABOUT
     END
 END
 

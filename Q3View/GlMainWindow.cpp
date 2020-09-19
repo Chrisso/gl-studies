@@ -77,18 +77,16 @@ int CGlMainWindow::OnCreate(CREATESTRUCT *lpcs)
 	return 0;
 }
 
-int CGlMainWindow::OnClose()
+void CGlMainWindow::OnClose()
 {
 	ATLTRACE(_T("OnClose\n"));
 	DestroyWindow();
-	return 0;
 }
 
-int CGlMainWindow::OnDestroy()
+void CGlMainWindow::OnDestroy()
 {
 	ATLTRACE(_T("OnDestroy\n"));
 	PostQuitMessage(0);
-	return 0;
 }
 
 LRESULT CGlMainWindow::OnBenchmark(UINT uMsg, WPARAM wParam, LPARAM lParam)

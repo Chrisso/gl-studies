@@ -49,7 +49,7 @@ BEGIN
     BEGIN
         MENUITEM "&Open",                       ID_FILE_OPEN
         MENUITEM SEPARATOR
-        MENUITEM "E&xit\tAlt+F4",               IDM_EXIT
+        MENUITEM "E&xit\tAlt+F4",               ID_APP_EXIT
     END
     POPUP "&Animation"
     BEGIN
@@ -94,7 +94,7 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&About ...",                  IDM_ABOUT
+        MENUITEM "&About ...",                  ID_APP_ABOUT
     END
 END
 
