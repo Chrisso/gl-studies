@@ -156,8 +156,6 @@ bool CScene::Create()
 	glEnableVertexAttribArray(1); // texcoord
 	glEnableVertexAttribArray(2); // color
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
 	nk_input_begin(&m_nkContext); // start input tracking
@@ -227,11 +225,10 @@ void CScene::Render(float time)
 		1, GL_FALSE, glm::value_ptr(m_matNuklear)
 	);
 
-	glBindVertexArray(m_nVertexArray);
+	// conversion
+
 	glBindBuffer(GL_ARRAY_BUFFER, m_nVertexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_nElementBuffer);
-
-	// conversion
 
 	void *vertices = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 	void *elements = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
@@ -244,7 +241,12 @@ void CScene::Render(float time)
 	glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 	// rendering
+
+	glBindVertexArray(m_nVertexArray);
 
 	const nk_draw_command *cmd;
 	const nk_draw_index *offset = 0;
@@ -261,11 +263,10 @@ void CScene::Render(float time)
 		offset += cmd->elem_count;
 	}
 
+	glBindVertexArray(0);
+
 	// cleanup
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
 	glDisable(GL_SCISSOR_TEST);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);

@@ -60,7 +60,6 @@ bool CBackground::Create()
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
 	Resize(800, 600); // create some initial data
