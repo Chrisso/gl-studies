@@ -3,6 +3,7 @@
 #include <sstream>
 #include <algorithm>
 #include <glm/gtc/type_ptr.hpp>
+// #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Q3Model.h"
 #include "Resource.h"
@@ -101,7 +102,19 @@ MD3MeshGeometry::MD3MeshGeometry(void* meta, unsigned char* data)
 			pVertices[base_out + 0] = pRaw[base_in + 0] / 64.0f;
 			pVertices[base_out + 1] = pRaw[base_in + 1] / 64.0f;
 			pVertices[base_out + 2] = pRaw[base_in + 2] / 64.0f;
+			
 			// pRaw[base_in + 3] contains normal encoded in spherical coordinates
+			// see https://github.com/id-Software/Quake-III-Arena/blob/master/q3map/misc_model.c#L293
+			/*
+			float lat = static_cast<float>((pRaw[base_in + 3] >> 8) & 0xFF);
+			float lng = static_cast<float>(pRaw[base_in + 3] & 0xFF);
+
+			lat *= glm::pi<float>() / 128.0f;
+			lng *= glm::pi<float>() / 128.0f;
+
+			float nx = std::cos(lat) * std::sin(lng);
+			float ny = std::sin(lat) * std::sin(lng);
+			float nz = std::cos(lng);*/
 		}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
