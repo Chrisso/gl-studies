@@ -113,11 +113,16 @@ MD3MeshGeometry::MD3MeshGeometry(void* meta, unsigned char* data)
 		glGenBuffers(1, &m_nTexCoordBuffer);
 		ATLASSERT(m_nTexCoordBuffer != 0);
 
+		GLintptr frameSize = static_cast<GLintptr>(m_nVertices) * 2 * sizeof(float);
+
 		glBindBuffer(GL_ARRAY_BUFFER, m_nTexCoordBuffer);
-		glBufferData(GL_ARRAY_BUFFER,
-			(size_t)m_nVertices * 2 * sizeof(GLfloat),
-			data + pHeader->nTexCoordOffset,
-			GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, frameSize * m_nFrames, nullptr, GL_STATIC_DRAW);
+		for (int i = 0; i < m_nFrames; i++)
+		{
+			// all frames have same texture coordinates, just copy them per frame to vram
+			// so that we can use consistent offsets when drawing frame vertices
+			glBufferSubData(GL_ARRAY_BUFFER, frameSize * i, frameSize, data + pHeader->nTexCoordOffset);
+		}
 
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray(1);
@@ -165,13 +170,10 @@ MD3MeshGeometry::~MD3MeshGeometry()
 void MD3MeshGeometry::Render(float time)
 {
 	ATLASSERT(m_nCurrentFrame < m_nFrames);
-	size_t nVertexOffset = (size_t)m_nCurrentFrame * m_nVertices * 3 * sizeof(GLfloat);
-
 	glBindVertexArray(m_nVertexArray);
-	glBindBuffer(GL_ARRAY_BUFFER, m_nVertexBuffer);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const GLvoid*>(nVertexOffset));
-	glDrawElements(GL_TRIANGLES, m_nTriangles * 3, GL_UNSIGNED_INT, (void*)0);
-	glBindVertexArray(0);
+	glDrawElementsBaseVertex(GL_TRIANGLES,
+		m_nTriangles * 3, GL_UNSIGNED_INT,
+		(void*)0, m_nCurrentFrame * m_nVertices);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
