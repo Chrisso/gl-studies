@@ -66,6 +66,7 @@ public:
 	}
 };
 
+// Doesn't work on some AMD devices.
 class CGlFrameCounter
 {
 private:
