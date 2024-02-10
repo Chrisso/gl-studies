@@ -13,6 +13,10 @@
 #include <shellapi.h>
 #include <shlobj.h>
 
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GL/wglew.h>
@@ -21,7 +25,6 @@
 #include <glm/glm.hpp>
 
 // C RunTime Header Files
-#include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
