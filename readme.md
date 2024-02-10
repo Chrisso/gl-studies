@@ -3,6 +3,9 @@
 ## Prerequisites
 
 * [Visual Studio](https://www.visualstudio.com/vs/community/)
+
+Dependencies (install with `vcpkg.exe install --triplet x64-windows-static`):
+
 * [Freetype](https://www.freetype.org/)
 * [GLEW](https://github.com/nigels-com/glew/)
 * [GLM](https://github.com/g-truc/glm/)
