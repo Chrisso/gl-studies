@@ -8,4 +8,4 @@
 // and not in this file
 
 #define NK_IMPLEMENTATION
-#include "nuklear.h"
+#include <nuklear/nuklear.h>

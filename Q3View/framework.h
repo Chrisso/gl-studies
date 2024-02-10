@@ -15,7 +15,7 @@
 
 #define ZLIB_WINAPI // only with static link!
 #include <zlib.h>
-#include <unzip.h>
+#include <minizip/unzip.h>
 
 // C RunTime Header Files
 #include <stdlib.h>

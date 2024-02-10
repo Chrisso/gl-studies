@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "glstudies",
+  "version": "1.0.0",
+  "dependencies": [
+    "curl",
+    "freetype",
+    "glew",
+    "glm",
+    "minizip",
+    "nuklear",
+    "stb",
+    "wtl",
+    "zlib"
+  ],
+  "$init": "vcpkg x-update-baseline --add-initial-baseline",
+  "$build64": "vcpkg.exe install --triplet x64-windows-static",
+  "$build32": "vcpkg.exe install --triplet x86-windows-static",
+  "builtin-baseline": "f1c6efee2245009540dde947e0e3d008f3aa7dbb"
+}
