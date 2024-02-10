@@ -211,6 +211,12 @@ int CGlView::OnCreate(CREATESTRUCT *lpcs)
 	}
 #endif // _DEBUG
 
+	if (WGLEW_EXT_swap_control)
+	{
+		ATLTRACE(_T("Enabling vsync...\n"));
+		wglSwapIntervalEXT(WGLEW_EXT_swap_control_tear ? -1 : 1);
+	}
+
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 
