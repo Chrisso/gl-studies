@@ -17,9 +17,8 @@
 #include <GL/glew.h>
 #include <GL/wglew.h>
 
-#define ZLIB_WINAPI // only with static link!
-#include <zlib.h>
-#include <minizip/unzip.h>
+#include <minizip-ng/mz.h>
+#include <minizip-ng/mz_compat.h>
 
 // C RunTime Header Files
 #include <malloc.h>

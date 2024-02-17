@@ -7,14 +7,13 @@
     "freetype",
     "glew",
     "glm",
-    "minizip",
+    "minizip-ng",
     "nuklear",
     "stb",
-    "wtl",
-    "zlib"
+    "wtl"
   ],
   "$init": "vcpkg x-update-baseline --add-initial-baseline",
   "$build64": "vcpkg.exe install --triplet x64-windows-static",
   "$build32": "vcpkg.exe install --triplet x86-windows-static",
-  "builtin-baseline": "f1c6efee2245009540dde947e0e3d008f3aa7dbb"
+  "builtin-baseline": "c823fd3e57035b10d970a96da2796a2db55e5df5"
 }

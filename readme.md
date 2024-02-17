@@ -9,10 +9,10 @@ Dependencies (install with `vcpkg.exe install --triplet x64-windows-static`):
 * [Freetype](https://www.freetype.org/)
 * [GLEW](https://github.com/nigels-com/glew/)
 * [GLM](https://github.com/g-truc/glm/)
+* [minizip-ng](https://github.com/zlib-ng/minizip-ng)
 * [Nuklear](https://github.com/vurtun/nuklear)
 * [stb](https://github.com/nothings/stb) (single header libraries)
 * [WTL](https://sourceforge.net/projects/wtl/)
-* [zlib](https://www.zlib.net/)
 
 ## Projects
 
